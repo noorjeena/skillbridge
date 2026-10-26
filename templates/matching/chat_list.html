@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Messages | SkillBridge{% endblock %}
+{% block content %}
+<section class="chat-inbox-page mx-auto">
+    <header class="chat-inbox-intro">
+        <div class="chat-inbox-heading">
+            <div>
+                <p class="chat-inbox-eyebrow"><span aria-hidden="true"></span> YOUR LEARNING COMMUNITY</p>
+                <h1>Messages</h1>
+                <p>Keep the conversation going. Connect with your learning partners and make your next step together.</p>
+            </div>
+            <a class="chat-inbox-partnership-link" href="{% url 'matching:partnerships' %}"><span aria-hidden="true">↗</span> My partnerships</a>
+        </div>
+        <div class="chat-inbox-summary">
+            <span><span class="chat-inbox-live-dot" aria-hidden="true"></span> Thoughtful conversations, shared progress</span>
+            <span><strong>{{ conversations|length }}</strong> active conversation{{ conversations|length|pluralize }}</span>
+        </div>
+    </header>
+
+    {% if conversations %}
+        <section class="chat-conversation-list" aria-label="Your conversations">
+            {% for conversation in conversations %}
+                {% with other_user=conversation.other_user %}
+                    <a href="{% url 'chat:chat-detail' conversation.pk %}" class="chat-conversation-card{% if conversation.unread_count %} has-unread{% endif %}">
+                        <span class="chat-conversation-avatar" aria-hidden="true">{{ other_user.get_full_name|default:other_user.username|first|upper }}</span>
+                        <span class="chat-conversation-content">
+                            <span class="chat-conversation-topline">
+                                <strong>{{ other_user.get_full_name|default:other_user.username }}</strong>
+                                <span class="chat-conversation-time">{% if conversation.last_message %}{{ conversation.last_message.created_at|date:'M j, g:i A' }}{% else %}New connection{% endif %}</span>
+                            </span>
+                            <span class="chat-conversation-partnership">{{ conversation.partnership.get_relationship_type_display }}</span>
+                            <span class="chat-conversation-preview">
+                                {% if conversation.last_message %}
+                                    {% if conversation.last_message.sender_id == user.id %}<span>You: </span>{% endif %}{{ conversation.last_message.content|truncatechars:115 }}
+                                {% else %}
+                                    Start your conversation with a friendly hello.
+                                {% endif %}
+                            </span>
+                        </span>
+                        <span class="chat-conversation-indicators">
+                            {% if conversation.unread_count %}
+                                <span class="chat-unread-badge">{{ conversation.unread_count }} unread</span>
+                            {% else %}
+                                <span class="chat-open-indicator" aria-hidden="true">↗</span>
+                            {% endif %}
+                        </span>
+                    </a>
+                {% endwith %}
+            {% endfor %}
+        </section>
+    {% else %}
+        <section class="chat-inbox-empty">
+            <span class="chat-empty-icon" aria-hidden="true">✉</span>
+            <p class="chat-empty-eyebrow">GOOD THINGS START WITH A HELLO</p>
+            <h2>Your conversations will appear here</h2>
+            <p>Once you accept a learning partnership, you can message your partner and coordinate your next steps together.</p>
+            <a href="{% url 'matching:partnerships' %}">View my partnerships <span aria-hidden="true">→</span></a>
+        </section>
+    {% endif %}
+</section>
+{% endblock %}

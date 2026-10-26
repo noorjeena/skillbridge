@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}Sessions | SkillBridge{% endblock %}
+{% block content %}
+<section class="learning-sessions-page mx-auto">
+    <header class="learning-sessions-intro">
+        <div class="learning-sessions-heading">
+            <div>
+                <p class="learning-sessions-eyebrow"><span aria-hidden="true"></span> LIVE LEARNING</p>
+                <h1>Sessions</h1>
+                <p>Make time for progress. See what’s coming up and revisit the sessions that brought your learning to life.</p>
+            </div>
+            <a class="learning-sessions-back" href="{% url 'learning:directions' %}"><span aria-hidden="true">←</span> My learning</a>
+        </div>
+        <div class="learning-sessions-overview">
+            <span><span class="learning-live-indicator" aria-hidden="true"></span> Your shared learning calendar</span>
+            <div class="learning-session-counts">
+                <span><strong>{{ upcoming|length }}</strong> upcoming</span>
+                <span><strong>{{ past|length }}</strong> completed</span>
+                <span><strong>{{ cancelled|length }}</strong> cancelled</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="learning-session-group" aria-labelledby="upcoming-sessions-heading">
+        <header class="learning-session-group-heading">
+            <span class="learning-session-group-icon upcoming-session-icon" aria-hidden="true">◷</span>
+            <div><p>ON YOUR CALENDAR</p><h2 id="upcoming-sessions-heading">Upcoming <span>{{ upcoming|length }}</span></h2></div>
+        </header>
+        {% for session in upcoming %}
+            <article class="learning-session-card upcoming-session-card">
+                <div class="learning-session-date-block">
+                    <span>{{ session.scheduled_start|date:'M' }}</span>
+                    <strong>{{ session.scheduled_start|date:'j' }}</strong>
+                    <small>{{ session.scheduled_start|date:'D' }}</small>
+                </div>
+                <div class="learning-session-card-main">
+                    <div class="learning-session-card-topline">
+                        <span class="learning-session-subject">{{ session.learning_direction.skill.name }}</span>
+                        <span class="learning-session-card-status upcoming-status"><span aria-hidden="true"></span>{{ session.get_status_display }}</span>
+                        {% if session.is_live %}<span class="learning-session-card-status live-now-status">LIVE NOW</span>{% endif %}
+                    </div>
+                    <h3><a href="{% url 'learning:session-detail' session.pk %}">{{ session.title }}</a></h3>
+                    <p class="learning-session-card-meta">
+                        <span aria-hidden="true">◷</span> {{ session.scheduled_start|date:'M j, Y · g:i A' }} – {{ session.scheduled_end|date:'g:i A' }}
+                        {% if session.lesson %}<span class="learning-meta-divider" aria-hidden="true">·</span> {{ session.lesson.title }}{% endif %}
+                    </p>
+                </div>
+                <div class="learning-session-card-action">
+                    {% if session.meeting_url %}
+                        <a class="learning-session-details learning-session-meeting-link" href="{{ session.meeting_url }}" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↗</span> Meeting link</a>
+                    {% endif %}
+                    <a class="learning-session-details" href="{% url 'learning:session-detail' session.pk %}">Session details <span aria-hidden="true">→</span></a>
+                    {% if session.meeting_url and session.is_live %}
+                        <a class="learning-join-session" href="{{ session.meeting_url }}" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↗</span> Join session</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <div class="learning-session-empty">
+                <span aria-hidden="true">◷</span>
+                <div><strong>Nothing on the calendar just yet</strong><p>When a learning session is scheduled, you’ll find it here.</p></div>
+            </div>
+        {% endfor %}
+    </section>
+
+    <section class="learning-session-group" aria-labelledby="past-sessions-heading">
+        <header class="learning-session-group-heading">
+            <span class="learning-session-group-icon past-session-icon" aria-hidden="true">✓</span>
+            <div><p>YOUR PROGRESS SO FAR</p><h2 id="past-sessions-heading">Past sessions <span>{{ past|length }}</span></h2></div>
+        </header>
+        {% for session in past %}
+            <article class="learning-session-card past-session-card">
+                <div class="learning-session-date-block">
+                    <span>{{ session.scheduled_start|date:'M' }}</span>
+                    <strong>{{ session.scheduled_start|date:'j' }}</strong>
+                    <small>{{ session.scheduled_start|date:'D' }}</small>
+                </div>
+                <div class="learning-session-card-main">
+                    <div class="learning-session-card-topline">
+                        <span class="learning-session-subject">{{ session.learning_direction.skill.name }}</span>
+                        <span class="learning-session-card-status past-status"><span aria-hidden="true">✓</span>{{ session.get_status_display }}</span>
+                    </div>
+                    <h3><a href="{% url 'learning:session-detail' session.pk %}">{{ session.title }}</a></h3>
+                    <p class="learning-session-card-meta">
+                        <span aria-hidden="true">◷</span> {{ session.scheduled_start|date:'M j, Y · g:i A' }} – {{ session.scheduled_end|date:'g:i A' }}
+                        {% if session.lesson %}<span class="learning-meta-divider" aria-hidden="true">·</span> {{ session.lesson.title }}{% endif %}
+                    </p>
+                </div>
+                <div class="learning-session-card-action">
+                    <a class="learning-session-details" href="{% url 'learning:session-detail' session.pk %}">View recap <span aria-hidden="true">→</span></a>
+                </div>
+            </article>
+        {% empty %}
+            <div class="learning-session-empty">
+                <span aria-hidden="true">✳</span>
+                <div><strong>Your learning story is just beginning</strong><p>Completed sessions will appear here so you can look back on your progress.</p></div>
+            </div>
+        {% endfor %}
+    </section>
+
+    <section class="learning-session-group cancelled-session-group" aria-labelledby="cancelled-sessions-heading">
+        <header class="learning-session-group-heading">
+            <span class="learning-session-group-icon cancelled-session-icon" aria-hidden="true">×</span>
+            <div><p>SESSION HISTORY</p><h2 id="cancelled-sessions-heading">Cancelled <span>{{ cancelled|length }}</span></h2></div>
+        </header>
+        {% for session in cancelled %}
+            <article class="learning-session-card cancelled-session-card">
+                <div class="learning-session-date-block">
+                    <span>{{ session.scheduled_start|date:'M' }}</span>
+                    <strong>{{ session.scheduled_start|date:'j' }}</strong>
+                    <small>{{ session.scheduled_start|date:'D' }}</small>
+                </div>
+                <div class="learning-session-card-main">
+                    <div class="learning-session-card-topline">
+                        <span class="learning-session-subject">{{ session.learning_direction.skill.name }}</span>
+                        <span class="learning-session-card-status cancelled-status">{{ session.get_status_display }}</span>
+                    </div>
+                    <h3><a href="{% url 'learning:session-detail' session.pk %}">{{ session.title }}</a></h3>
+                    <p class="learning-session-card-meta"><span aria-hidden="true">◷</span> {{ session.scheduled_start|date:'M j, Y · g:i A' }} – {{ session.scheduled_end|date:'g:i A' }}</p>
+                </div>
+                <div class="learning-session-card-action">
+                    <a class="learning-session-details" href="{% url 'learning:session-detail' session.pk %}">View details <span aria-hidden="true">→</span></a>
+                </div>
+            </article>
+        {% empty %}
+            <div class="learning-session-empty compact-session-empty">
+                <div><strong>No cancelled sessions</strong><p>Cancelled sessions will be listed here.</p></div>
+            </div>
+        {% endfor %}
+    </section>
+</section>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}{{ lesson.title }} | SkillBridge{% endblock %}
+{% block content %}
+<section class="mx-auto" style="max-width: 820px;">
+    <p class="text-uppercase small fw-semibold text-success mb-1">{{ lesson.learning_plan.learning_direction.skill.name }} | Lesson {{ lesson.order }}</p>
+    <h1 class="h2 fw-semibold">{{ lesson.title }}</h1>
+    <p class="text-secondary">{{ lesson.learning_plan.title }}{% if lesson.estimated_duration %} | {{ lesson.estimated_duration }} minutes{% endif %}</p>
+    <article class="bg-white border rounded p-4 p-md-5 mt-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <h2 class="h5 fw-semibold mb-0">Lesson Notes</h2>
+            {% if is_teacher %}<a class="btn btn-sm btn-outline-primary" href="{% url 'learning:lesson-edit' lesson.pk %}">Add / Edit Lesson Notes</a>{% endif %}
+        </div>
+        <p class="mb-0">{{ lesson.description|default:'No lesson description provided.'|linebreaksbr }}</p>
+    </article>
+    <div class="bg-white border rounded p-4 mt-3">
+        <div class="d-flex justify-content-between small mb-1">
+            <span>Learning plan progress</span>
+            <strong>{{ lesson.learning_plan.completed_lessons }} / {{ lesson.learning_plan.total_lessons }} lessons | {{ lesson.learning_plan.progress_percentage }}%</strong>
+        </div>
+        <div class="progress" role="progressbar" aria-label="Learning plan progress" aria-valuenow="{{ lesson.learning_plan.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar bg-success" style="width: {{ lesson.learning_plan.progress_percentage }}%"></div>
+        </div>
+    </div>
+    <div class="bg-white border rounded p-4 mt-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div><span class="text-secondary">Learner chapter status:</span> <strong>{{ lesson_progress_label }}</strong></div>
+            {% if is_teacher %}<a href="{% url 'learning:lesson-edit' lesson.pk %}">Edit Lesson</a>{% endif %}
+        </div>
+        <p class="small text-secondary mt-2 mb-0">PDFs accessed: {{ material_access_count }} / {{ material_count }} · Assignments submitted: {{ submitted_assignment_count }} / {{ active_assignment_count }}</p>
+        <p class="small text-secondary mt-1 mb-0">This chapter is marked complete after every active assignment is submitted. Opening or downloading a PDF is tracked as resource access, not as assignment completion.</p>
+    </div>
+    <section class="mt-5" aria-labelledby="materials-heading">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <h2 class="h4 fw-semibold mb-0" id="materials-heading">Learning Materials</h2>
+            {% if is_teacher %}<a class="btn btn-primary" href="{% url 'learning:material-add' lesson.pk %}">＋ Upload PDF / Add Material</a>{% endif %}
+        </div>
+        {% for material in materials %}
+            <article class="bg-white border rounded p-3 mb-2 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h3 class="h5 fw-semibold mb-1">{{ material.title }}</h3>
+                    <div class="small text-secondary">
+                        <span class="badge text-bg-light border">{{ material.get_material_type_display }}</span>
+                        Added {{ material.created_at|date:'M j, Y' }}
+                    </div>
+                    {% if material.description %}<p class="small text-secondary mb-0 mt-2">{{ material.description|linebreaksbr }}</p>{% endif %}
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    {% if material.material_type == 'LINK' %}
+                        <a href="{{ material.external_url }}" target="_blank" rel="noopener noreferrer">Open Link</a>
+                    {% else %}
+                        {% if material.pk in accessed_material_ids %}<span class="badge text-bg-success">Accessed</span>{% endif %}
+                        <a href="{% url 'learning:material-file' material.pk %}" target="_blank" rel="noopener">Open PDF</a>
+                        <a href="{% url 'learning:material-file' material.pk %}?download=1">Download</a>
+                    {% endif %}
+                    {% if is_teacher %}
+                        <a href="{% url 'learning:material-edit' material.pk %}">Edit</a>
+                        <a class="text-danger" href="{% url 'learning:material-delete' material.pk %}">Delete</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <div class="bg-white border rounded p-4 text-secondary">
+                No learning materials or uploaded files yet.
+                {% if is_teacher %}<a href="{% url 'learning:material-add' lesson.pk %}">Upload a PDF or add a link</a>.{% endif %}
+                {% if is_learner %} Your teacher hasn't added chapter resources yet.{% endif %}
+            </div>
+        {% endfor %}
+        <a class="btn btn-link px-0 mt-2" href="{% url 'learning:lesson-materials' lesson.pk %}">View materials</a>
+    </section>
+    <section class="mt-5" aria-labelledby="assignments-heading">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <h2 class="h4 fw-semibold mb-0" id="assignments-heading">Assignments</h2>
+            {% if is_teacher %}<a class="btn btn-primary" href="{% url 'learning:assignment-add' lesson.pk %}">＋ Create Assignment</a>{% endif %}
+        </div>
+        {% for assignment in assignments %}
+            <article class="bg-white border rounded p-3 mb-2 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h3 class="h5 fw-semibold mb-1"><a class="text-decoration-none" href="{% url 'learning:assignment-detail' assignment.pk %}">{{ assignment.title }}</a></h3>
+                    <span class="badge text-bg-light border">{{ assignment.get_status_display }}</span>
+                    {% if assignment.due_date %}<span class="small text-secondary ms-2">Due {{ assignment.due_date|date:'M j, Y g:i A' }}</span>{% endif %}
+                </div>
+                {% if is_teacher %}
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'learning:assignment-edit' assignment.pk %}">Edit</a>
+                        <a href="{% url 'learning:assignment-submissions' assignment.pk %}">Submissions</a>
+                    </div>
+                {% endif %}
+            </article>
+        {% empty %}
+            <div class="bg-white border rounded p-4 text-secondary">
+                No assignments are available for this lesson.
+                {% if is_teacher %}<a href="{% url 'learning:assignment-add' lesson.pk %}">Create the first assignment</a>.{% endif %}
+            </div>
+        {% endfor %}
+    </section>
+    <a class="btn btn-link px-0 mt-3" href="{% url 'learning:plan-detail' lesson.learning_plan_id %}">Back to Learning Plan</a>
+</section>
+{% endblock %}

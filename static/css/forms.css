@@ -1,0 +1,43 @@
+.form-control,
+.form-select,
+.form-control:focus,
+.form-select:focus,
+textarea,
+input,
+select {
+    transition: border-color var(--sb-transition), box-shadow var(--sb-transition), background-color var(--sb-transition);
+}
+
+.form-control,
+.form-select,
+textarea,
+input,
+select {
+    min-height: 44px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md);
+    background: var(--sb-surface);
+    color: var(--sb-text);
+    box-shadow: none;
+}
+
+.form-control:focus,
+.form-select:focus,
+textarea:focus,
+input:focus,
+select:focus {
+    border-color: var(--sb-primary);
+    box-shadow: 0 0 0 0.2rem rgba(101, 87, 232, 0.12);
+    outline: none;
+}
+
+.form-label {
+    color: var(--sb-text-secondary);
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.form-text,
+.text-secondary {
+    color: var(--sb-text-muted) !important;
+}

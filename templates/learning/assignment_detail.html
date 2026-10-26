@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}{{ assignment.title }} | SkillBridge{% endblock %}
+{% block content %}
+<section class="mx-auto" style="max-width: 900px;">
+    <p class="text-uppercase small fw-semibold text-success mb-1">{{ assignment.lesson.learning_plan.learning_direction.skill.name }} | {{ assignment.lesson.learning_plan.title }}</p>
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+        <div>
+            <p class="small text-secondary mb-1">{{ assignment.lesson.title }}</p>
+            <h1 class="h2 fw-semibold">{{ assignment.title }}</h1>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="badge {% if assignment.status == 'ACTIVE' %}text-bg-success{% elif assignment.status == 'CLOSED' %}text-bg-secondary{% else %}text-bg-light border{% endif %}">{{ assignment.get_status_display }}</span>
+                {% if assignment.due_date %}<span class="small text-secondary">Due {{ assignment.due_date|date:'M j, Y g:i A' }}</span>{% endif %}
+                <span class="small text-secondary">Created {{ assignment.created_at|date:'M j, Y' }}</span>
+            </div>
+        </div>
+        {% if is_teacher %}
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-secondary" href="{% url 'learning:assignment-edit' assignment.pk %}">Edit</a>
+                <a class="btn btn-outline-danger" href="{% url 'learning:assignment-delete' assignment.pk %}">Delete</a>
+                <a class="btn btn-primary" href="{% url 'learning:assignment-submissions' assignment.pk %}">View Submissions</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <article class="bg-white border rounded p-4 p-md-5 mt-4">
+        <h2 class="h5 fw-semibold">Instructions</h2>
+        <div>{{ assignment.instructions|linebreaksbr }}</div>
+    </article>
+
+    {% if assignment.resource_file %}
+        <section class="mt-4">
+            <div class="bg-white border rounded p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <p class="text-uppercase small fw-semibold text-primary mb-1">Assignment Resource</p>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fs-4" aria-hidden="true">📄</span>
+                            <strong>{{ assignment.resource_file.name|cut:'assignment_resources/' }}</strong>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-outline-primary" href="{% url 'learning:assignment-resource-file' assignment.pk %}" target="_blank" rel="noopener">Open</a>
+                        <a class="btn btn-primary" href="{% url 'learning:assignment-resource-file' assignment.pk %}?download=1">Download</a>
+                    </div>
+                </div>
+                <p class="text-secondary mb-0 mt-3">Assignment file provided by your teacher.</p>
+            </div>
+        </section>
+    {% endif %}
+
+    {% if is_teacher %}
+        <section class="mt-5">
+            <h2 class="h4 fw-semibold mb-3">Submissions</h2>
+            {% for item in submissions %}
+                <article class="bg-white border rounded p-3 mb-2 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <strong>{{ item.learner.full_name|default:item.learner.user.username }}</strong>
+                        <span class="badge text-bg-light border ms-2">{{ item.get_status_display }}</span>
+                        {% if item.submitted_at %}<div class="small text-secondary">Submitted {{ item.submitted_at|date:'M j, Y g:i A' }}</div>{% endif %}
+                        {% if item.evaluation %}
+                            <div class="small mt-1">Evaluation: {{ item.evaluation.get_status_display }}{% if item.evaluation.score is not None %} | {{ item.evaluation.score }}/100{% endif %}</div>
+                            {% if item.evaluation.feedback %}<div class="small text-secondary mt-1">{{ item.evaluation.feedback|truncatewords:20 }}</div>{% endif %}
+                        {% else %}<div class="small text-secondary mt-1">Not evaluated</div>{% endif %}
+                    </div>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{% url 'learning:submission-detail' item.pk %}">View Work</a>
+                        {% if item.status == 'SUBMITTED' or item.status == 'EVALUATED' %}
+                            <a href="{% url 'learning:submission-evaluate' item.pk %}">{% if item.evaluation %}Edit Evaluation{% else %}Evaluate Submission{% endif %}</a>
+                        {% endif %}
+                    </div>
+                </article>
+            {% empty %}<p class="text-secondary">No submissions yet.</p>{% endfor %}
+            {% if not submissions %}<p class="small text-secondary mt-3">Submitted work is awaiting review.</p>{% endif %}
+        </section>
+    {% elif submission and submission.status == 'SUBMITTED' or submission and submission.status == 'EVALUATED' %}
+        <section class="bg-white border rounded p-4 mt-4">
+            <h2 class="h5 fw-semibold">Submission Status: {{ submission.get_status_display }}</h2>
+            <p class="small text-secondary">Submitted {{ submission.submitted_at|date:'M j, Y g:i A' }}</p>
+            {% if submission.answer_text %}<div class="mb-3">{{ submission.answer_text|linebreaksbr }}</div>{% endif %}
+            {% if submission.file %}<a href="{% url 'learning:submission-file' submission.pk %}">View / Download your file</a>{% endif %}
+            {% if submission.status == 'EVALUATED' and evaluation %}
+                <hr>
+                <h3 class="h6 fw-semibold">Teacher Evaluation</h3>
+                {% if evaluation.score is not None %}<p><strong>Score:</strong> {{ evaluation.score }} / 100</p>{% elif evaluation.feedback %}<p class="small text-secondary">Feedback provided without a score.</p>{% endif %}
+                {% if evaluation.feedback %}<p><strong>Teacher Feedback</strong><br>{{ evaluation.feedback|linebreaksbr }}</p>{% endif %}
+            {% else %}<p class="text-secondary mt-3 mb-0">Your submission has not been evaluated yet.</p>{% endif %}
+            <p class="small text-secondary mt-3 mb-0">This submission is final and can no longer be changed.</p>
+        </section>
+    {% elif can_submit and assignment.status == 'ACTIVE' %}
+        <section class="bg-white border rounded p-4 mt-4">
+            <h2 class="h5 fw-semibold">Your Submission</h2>
+            {% if submission and submission.status == 'DRAFT' %}<p class="small text-secondary">Draft saved. You can continue editing before submitting.</p>{% endif %}
+            <form method="post" enctype="multipart/form-data" action="{% url 'learning:assignment-submit' assignment.pk %}" novalidate>
+                {% csrf_token %}
+                {% if submission_form.non_field_errors %}<div class="alert alert-danger">{{ submission_form.non_field_errors }}</div>{% endif %}
+                {% for field in submission_form %}
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.name == 'file' %}<div class="form-text">PDF, DOC/DOCX, PPT/PPTX, XLS/XLSX, TXT, or ZIP. Maximum size: 20 MB.</div>{% endif %}
+                        {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    </div>
+                {% endfor %}
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-secondary" type="submit" name="action" value="draft">Save Draft</button>
+                    <button class="btn btn-primary" type="submit" name="action" value="submit">Submit Assignment</button>
+                </div>
+            </form>
+        </section>
+    {% else %}
+        <div class="alert alert-secondary mt-4">This assignment is closed and is not accepting submissions.</div>
+        {% if submission %}<a href="{% url 'learning:submission-detail' submission.pk %}">View your submission</a>{% endif %}
+    {% endif %}
+
+    <a class="btn btn-link px-0 mt-3" href="{% url 'learning:lesson-detail' assignment.lesson_id %}">Back to Lesson</a>
+</section>
+{% endblock %}

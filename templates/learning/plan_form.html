@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Edit Learning Plan{% else %}Create Learning Plan{% endif %} | SkillBridge{% endblock %}
+{% block content %}
+<main class="learning-plan-form-page mx-auto">
+    <header class="learning-plan-form-hero">
+        <div>
+            <p class="learning-plan-form-eyebrow"><span aria-hidden="true"></span> BUILD A LEARNING PATH</p>
+            <h1>{% if object %}Shape your learning plan{% else %}Create a learning plan{% endif %}</h1>
+            <p>Turn a shared learning goal into a clear path forward. You can add lessons and resources once your plan is ready.</p>
+        </div>
+        <a class="learning-plan-back-link" href="{% if object %}{% url 'learning:plan-detail' object.pk %}{% else %}{% url 'learning:directions' %}{% endif %}">
+            <span aria-hidden="true">‹</span> {% if object %}Back to plan{% else %}My learning{% endif %}
+        </a>
+    </header>
+    <section class="learning-plan-form-card">
+        <div class="learning-plan-form-card-heading">
+            <span class="learning-plan-form-icon" aria-hidden="true">✦</span>
+            <div><p>START WITH THE FOUNDATIONS</p><h2>Plan details</h2></div>
+        </div>
+        <form method="post" novalidate class="learning-plan-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            <div class="learning-plan-form-field{% if field.errors %} has-errors{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.name == 'learning_direction' %}<div class="learning-plan-field-hint">Choose the active learning direction this plan will support.</div>{% endif %}
+                {% if field.name == 'title' %}<div class="learning-plan-field-hint">Give your learning path a clear, memorable name.</div>{% endif %}
+                {% if field.name == 'description' %}<div class="learning-plan-field-hint">Outline the focus and outcomes you want to work toward.</div>{% endif %}
+                {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="learning-plan-form-actions">
+            <button class="learning-plan-submit-button" type="submit">{% if object %}Save changes{% else %}Create learning plan{% endif %}<span aria-hidden="true">→</span></button>
+            <a class="learning-plan-cancel-button" href="{% if object %}{% url 'learning:plan-detail' object.pk %}{% else %}{% url 'learning:directions' %}{% endif %}">Cancel</a>
+        </div>
+        </form>
+    </section>
+</main>
+{% endblock %}

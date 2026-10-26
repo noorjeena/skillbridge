@@ -1,0 +1,18 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}{{ page_title }} | SkillBridge Admin{% endblock %}
+{% block admin_content %}
+<section class="admin-confirm-panel">
+    <span class="admin-confirm-icon" aria-hidden="true">{% if will_activate %}✓{% else %}!{% endif %}</span>
+    <h2>{% if will_activate %}Activate {{ skill.name }}?{% else %}Deactivate {{ skill.name }}?{% endif %}</h2>
+    {% if will_activate %}
+        <p>This skill will become available for students to select as a teaching or learning skill.</p>
+    {% else %}
+        <p>Students will no longer be able to select this skill for new entries. Existing student and learning records will remain intact.</p>
+    {% endif %}
+    <form method="post" class="admin-confirm-actions">
+        {% csrf_token %}
+        <button class="btn btn-primary" type="submit">{% if will_activate %}Activate skill{% else %}Deactivate skill{% endif %}</button>
+        <a class="button button-quiet" href="{% url 'admin_dashboard:skills' %}">Cancel</a>
+    </form>
+</section>
+{% endblock %}

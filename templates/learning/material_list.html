@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Learning Materials | SkillBridge{% endblock %}
+{% block content %}
+<section class="mx-auto" style="max-width: 860px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <p class="text-uppercase small fw-semibold text-success mb-1">{{ lesson.learning_plan.learning_direction.skill.name }} | Lesson {{ lesson.order }}</p>
+            <h1 class="h2 fw-semibold mb-0">{{ lesson.title }} Materials</h1>
+        </div>
+        {% if is_teacher %}<a class="btn btn-primary" href="{% url 'learning:material-add' lesson.pk %}">Add Material</a>{% endif %}
+    </div>
+    {% for material in materials %}
+        <article class="bg-white border rounded p-4 mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <h2 class="h5 fw-semibold mb-1">{{ material.title }}</h2>
+                    <p class="small text-secondary mb-2"><span class="badge text-bg-light border">{{ material.get_material_type_display }}</span> Added {{ material.created_at|date:'M j, Y' }}</p>
+                    {% if material.description %}<p class="mb-0">{{ material.description|linebreaksbr }}</p>{% endif %}
+                </div>
+                <div class="d-flex gap-3">
+                    {% if material.material_type == 'LINK' %}
+                        <a href="{{ material.external_url }}" target="_blank" rel="noopener noreferrer">Open Link</a>
+                    {% else %}
+                        <a href="{% url 'learning:material-file' material.pk %}">View / Download</a>
+                    {% endif %}
+                    {% if is_teacher %}
+                        <a href="{% url 'learning:material-edit' material.pk %}">Edit</a>
+                        <a class="text-danger" href="{% url 'learning:material-delete' material.pk %}">Delete</a>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
+    {% empty %}
+        <div class="bg-white border rounded p-4 text-secondary">No learning materials have been added yet.</div>
+    {% endfor %}
+    <a class="btn btn-link px-0" href="{% url 'learning:lesson-detail' lesson.pk %}">Back to Lesson</a>
+</section>
+{% endblock %}

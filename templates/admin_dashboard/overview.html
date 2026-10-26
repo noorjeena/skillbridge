@@ -1,0 +1,87 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}Overview | SkillBridge Admin{% endblock %}
+{% block admin_content %}
+<section aria-label="Platform overview">
+    <div class="admin-section-heading">
+        <div><h2>Platform overview</h2><p>Live totals from the SkillBridge database.</p></div>
+        <span class="admin-updated">Updated {{ now|date:"M j, Y" }}</span>
+    </div>
+    <div class="admin-stat-grid">
+        <a class="admin-stat" href="{% url 'admin_dashboard:users' %}">
+            <span class="admin-stat-label">Students</span><strong>{{ student_count }}</strong><span class="admin-stat-note">{{ active_student_count }} active accounts</span>
+        </a>
+        <a class="admin-stat" href="{% url 'admin_dashboard:skills' %}">
+            <span class="admin-stat-label">Skill catalogue</span><strong>{{ skill_count }}</strong><span class="admin-stat-note">{{ active_skill_count }} active · {{ inactive_skill_count }} inactive</span>
+        </a>
+        <a class="admin-stat" href="{% url 'admin_dashboard:matches' %}">
+            <span class="admin-stat-label">Pending requests</span><strong>{{ pending_request_count }}</strong><span class="admin-stat-note">Awaiting a student response</span>
+        </a>
+        <a class="admin-stat" href="{% url 'admin_dashboard:partnerships' %}">
+            <span class="admin-stat-label">Active partnerships</span><strong>{{ accepted_partnership_count }}</strong><span class="admin-stat-note">{{ active_direction_count }} active learning directions</span>
+        </a>
+        <a class="admin-stat" href="{% url 'admin_dashboard:sessions' %}">
+            <span class="admin-stat-label">Scheduled sessions</span><strong>{{ scheduled_session_count }}</strong><span class="admin-stat-note">{{ completed_session_count }} completed sessions</span>
+        </a>
+        <a class="admin-stat" href="{% url 'admin_dashboard:assignments' %}">
+            <span class="admin-stat-label">Submissions</span><strong>{{ pending_submission_count }}</strong><span class="admin-stat-note">Pending evaluation · {{ evaluated_submission_count }} evaluated</span>
+        </a>
+        <a class="admin-stat" href="{% url 'admin_dashboard:reviews' %}">
+            <span class="admin-stat-label">Peer reviews</span><strong>{{ review_count }}</strong><span class="admin-stat-note">Submitted by learners</span>
+        </a>
+        <a class="admin-stat" href="{% url 'admin_dashboard:messages' %}">
+            <span class="admin-stat-label">Conversations</span><strong>{{ conversation_count }}</strong><span class="admin-stat-note">{{ message_count }} messages exchanged</span>
+        </a>
+        <a class="admin-stat" href="{% url 'admin_dashboard:notifications' %}">
+            <span class="admin-stat-label">Unread notifications</span><strong>{{ unread_notification_count }}</strong><span class="admin-stat-note">Across all accounts</span>
+        </a>
+    </div>
+</section>
+
+<div class="admin-overview-columns">
+    <section class="admin-panel" aria-labelledby="recent-requests-heading">
+        <div class="admin-panel-heading">
+            <div><h2 id="recent-requests-heading">Recent requests</h2><p>Latest peer connections initiated</p></div>
+            <a href="{% url 'admin_dashboard:matches' %}">View all</a>
+        </div>
+        {% if recent_requests %}
+            <div class="admin-activity-list">
+                {% for match_request in recent_requests %}
+                    <div class="admin-activity-row">
+                        <span class="admin-activity-avatar">{{ match_request.sender.user.username|first|upper }}</span>
+                        <div class="admin-activity-main">
+                            <strong>{{ match_request.sender.full_name|default:match_request.sender.user.username }} <span aria-hidden="true">→</span> {{ match_request.receiver.full_name|default:match_request.receiver.user.username }}</strong>
+                            <small>{{ match_request.match.get_match_type_display }} · {{ match_request.created_at|date:"M j, Y" }}</small>
+                        </div>
+                        <span class="admin-status is-{{ match_request.status|lower }}">{{ match_request.get_status_display }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="admin-empty">No match requests yet.</p>
+        {% endif %}
+    </section>
+
+    <section class="admin-panel" aria-labelledby="recent-sessions-heading">
+        <div class="admin-panel-heading">
+            <div><h2 id="recent-sessions-heading">Recent sessions</h2><p>Latest scheduled learning activity</p></div>
+            <a href="{% url 'admin_dashboard:sessions' %}">View all</a>
+        </div>
+        {% if recent_sessions %}
+            <div class="admin-activity-list">
+                {% for session in recent_sessions %}
+                    <div class="admin-activity-row">
+                        <span class="admin-activity-avatar admin-activity-avatar-alt">{{ session.learning_direction.skill.name|first|upper }}</span>
+                        <div class="admin-activity-main">
+                            <strong>{{ session.title }}</strong>
+                            <small>{{ session.learning_direction.skill.name }} · {{ session.scheduled_start|date:"M j, Y · g:i A" }}</small>
+                        </div>
+                        <span class="admin-status is-{{ session.status|lower }}">{{ session.get_status_display }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="admin-empty">No sessions have been scheduled.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

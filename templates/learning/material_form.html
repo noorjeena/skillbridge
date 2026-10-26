@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Edit Material{% else %}Add Material{% endif %} | SkillBridge{% endblock %}
+{% block content %}
+<section class="auth-panel mx-auto p-4 p-md-5">
+    <h1 class="h3 fw-semibold mb-1">{% if object %}Edit Learning Material{% else %}Add Learning Material{% endif %}</h1>
+    <p class="text-secondary mb-4">Add notes, a web link, or upload a PDF or other supported file for {{ lesson.title }}.</p>
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.name == 'material_type' %}<div class="form-text">Choose External Link to share a URL, or Uploaded File to attach a PDF or document.</div>{% endif %}
+                {% if field.name == 'file' %}<div class="form-text">PDF, DOC/DOCX, PPT/PPTX, XLS/XLSX, TXT, or ZIP. Maximum size: 20 MB.</div>{% endif %}
+                {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary" type="submit">Save Material</button>
+            <a class="btn btn-outline-secondary" href="{% url 'learning:lesson-detail' lesson.pk %}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

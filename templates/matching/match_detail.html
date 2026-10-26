@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Skill Match | SkillBridge{% endblock %}
+{% block content %}
+<section class="mx-auto" style="max-width: 920px;">
+    <div class="mb-4">
+        <p class="text-uppercase small fw-semibold text-success mb-1">Skill match</p>
+        <h1 class="h2 fw-semibold">{{ partner.full_name|default:partner.user.username }}</h1>
+    </div>
+
+    <div class="bg-white border rounded p-4 p-md-5 mb-4">
+        <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-4">
+            {% if partner.profile_photo %}
+                <img src="{{ partner.profile_photo.url }}" alt="Profile photo for {{ partner.full_name|default:partner.user.username }}" width="112" height="112" class="rounded-circle border object-fit-cover">
+            {% else %}
+                <div class="rounded-circle border bg-light d-flex justify-content-center align-items-center text-success fw-semibold display-6 flex-shrink-0" style="width: 112px; height: 112px;">{{ partner.full_name|default:'S'|first|upper }}</div>
+            {% endif %}
+            <div class="text-center text-sm-start">
+                <h2 class="h4 fw-semibold mb-1">{{ partner.department|default:'Department not listed' }}{% if partner.academic_year %} | {{ partner.academic_year }}{% endif %}</h2>
+                <p class="small mb-2">
+                    {% if partner_rating_average %}<strong>{{ partner_rating_average|floatformat:1 }} / 5</strong>{% else %}<strong>No ratings yet</strong>{% endif %}
+                    <span class="text-secondary">({{ partner_review_count }} review{{ partner_review_count|pluralize }})</span>
+                </p>
+                <p class="mb-0">{{ partner.bio|default:'No bio added.'|linebreaksbr }}</p>
+            </div>
+        </div>
+        <div class="row g-4 mt-3">
+            <div class="col-md-6">
+                <h3 class="h6">Can teach</h3>
+                <ul class="list-unstyled mb-0">
+                    {% for offered in partner.offered_skills.all %}<li>{{ offered.skill.name }} <span class="text-secondary">| {{ offered.get_proficiency_display }}</span></li>{% empty %}<li class="text-secondary">No teaching skills listed.</li>{% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h3 class="h6">Wants to learn</h3>
+                <ul class="list-unstyled mb-0">
+                    {% for learning in partner.learning_skills.all %}<li>{{ learning.skill.name }} <span class="text-secondary">| {{ learning.get_learning_level_display }}</span></li>{% empty %}<li class="text-secondary">No learning skills listed.</li>{% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    {% if partner_reviews %}
+        <section class="bg-white border rounded p-4 mt-4">
+            <h2 class="h5 fw-semibold mb-3">Learning Partner Reviews</h2>
+            {% for review in partner_reviews %}
+                <article class="border-top py-3">
+                    <div class="d-flex justify-content-between gap-2">
+                        <strong>{{ review.rating }} / 5 · {{ review.learning_direction.skill.name }}</strong>
+                        <span class="small text-secondary">{{ review.created_at|date:'M j, Y' }}</span>
+                    </div>
+                    <p class="small text-secondary mb-1">From {{ review.reviewer.full_name|default:review.reviewer.user.username }}</p>
+                    {% if review.comment %}<p class="mb-0">{{ review.comment|linebreaksbr }}</p>{% endif %}
+                </article>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    <div class="bg-white border rounded p-4 p-md-5">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h2 class="h4 fw-semibold mb-1">Your Compatibility</h2>
+                <span class="badge {% if match.match_type == 'DIRECT_EXCHANGE' %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ match.get_match_type_display }}</span>
+            </div>
+            <div class="display-5 fw-semibold text-success">{{ match.compatibility_score }}%</div>
+        </div>
+        <div class="row g-4 border-top mt-3 pt-3">
+            <div class="col-md-6">
+                <h3 class="h6">You can learn from {{ partner.full_name|default:partner.user.username }}</h3>
+                {% for direction in you_learn %}<div>{{ direction.skill }} <span class="small text-secondary">| teacher: {{ direction.teacher_level }}</span></div>{% empty %}<p class="small text-secondary">No learning direction this way.</p>{% endfor %}
+            </div>
+            <div class="col-md-6">
+                <h3 class="h6">{{ partner.full_name|default:partner.user.username }} can learn from you</h3>
+                {% for direction in partner_learns %}<div>{{ direction.skill }} <span class="small text-secondary">| your level: {{ direction.teacher_level }}</span></div>{% empty %}<p class="small text-secondary">No reciprocal learning direction.</p>{% endfor %}
+            </div>
+        </div>
+        <details class="mt-4">
+            <summary class="small text-secondary">How this score is calculated</summary>
+            <p class="small text-secondary mt-2 mb-0">The rule-based score combines compatible skill directions and learning-level fit. Reviews are shown as context but do not affect compatibility scoring.</p>
+        </details>
+
+        <div class="border-top mt-4 pt-4">
+            {% if match.status == 'ACCEPTED' %}
+                <p class="mb-0">This match is now an active learning partnership.</p>
+            {% elif pending_request %}
+                <p class="mb-0">{% if pending_request.sender_id == user.student_profile.id %}Your request is awaiting a response.{% else %}You have a pending request from this student. <a href="{% url 'matching:requests' %}">Respond to it</a>.{% endif %}</p>
+            {% else %}
+                <form method="post" action="{% url 'matching:request' match.pk %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label" for="id_message">Add a note (optional)</label>
+                        {{ request_form.message }}
+                    </div>
+                    <button class="btn btn-primary" type="submit">{% if match.match_type == 'DIRECT_EXCHANGE' %}Send Exchange Request{% else %}Send Learning Request{% endif %}</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    <a class="btn btn-link px-0 mt-3" href="{% url 'matching:index' %}">Back to recommendations</a>
+</section>
+{% endblock %}

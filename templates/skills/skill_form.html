@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}{{ form_title }} | SkillBridge{% endblock %}
+{% block content %}
+<section class="skill-form-panel mx-auto" aria-labelledby="skill-form-heading">
+    <div class="skill-form-heading">
+        <span class="skill-form-mark" aria-hidden="true">✦</span>
+        <div>
+            <p class="skill-form-eyebrow">Your skill profile</p>
+            <h1 id="skill-form-heading">{{ form_title }}</h1>
+            <p class="skill-form-description">Choose from the SkillBridge catalogue to help peers find the right learning match.</p>
+        </div>
+    </div>
+    <form method="post" class="skill-form" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.name == 'skill' %}
+                    <p class="skill-field-hint" id="skill-catalogue-help">Select one of {{ field.field.queryset.count }} active skills. The list is grouped by category.</p>
+                {% endif %}
+                {% for error in field.errors %}<div class="text-danger small mt-1" role="alert">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="skill-form-actions">
+            <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+            <a class="button button-quiet" href="{% url 'skills:index' %}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

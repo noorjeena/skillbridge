@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Match Requests | SkillBridge{% endblock %}
+{% block content %}
+<section class="matching-page requests-page mx-auto">
+    <header class="matching-intro">
+        <div class="matching-page-header">
+            <div>
+                <p class="matching-eyebrow"><span aria-hidden="true"></span> CONNECTIONS IN MOTION</p>
+                <h1>Match requests</h1>
+                <p class="matching-page-description">Review incoming invitations and keep track of the learning connections you’ve started.</p>
+            </div>
+            <a class="matching-requests-link" href="{% url 'matching:index' %}"><span aria-hidden="true">⌕</span> Find partners</a>
+        </div>
+        <div class="matching-intro-footer">
+            <span><span class="matching-live-dot" aria-hidden="true"></span> Every great exchange starts with a hello</span>
+            <span class="matching-count"><strong>{{ received_requests|length }}</strong> received <span aria-hidden="true">·</span> <strong>{{ sent_requests|length }}</strong> sent</span>
+        </div>
+    </header>
+
+    <section class="request-section" aria-labelledby="received-heading">
+        <div class="request-section-heading">
+            <div>
+                <p class="request-section-kicker">YOUR INBOX</p>
+                <h2 id="received-heading">Requests received <span>{{ received_requests|length }}</span></h2>
+            </div>
+        </div>
+        {% for match_request in received_requests %}
+            <article class="request-card premium-request-card">
+                <header class="request-card-heading">
+                    <span class="request-person-avatar" aria-hidden="true">{{ match_request.sender.full_name|default:match_request.sender.user.username|first|upper }}</span>
+                    <div class="request-person-copy">
+                        <h3>{{ match_request.sender.full_name|default:match_request.sender.user.username }} <span>wants to connect</span></h3>
+                        <p><span class="request-pending-indicator" aria-hidden="true"></span> Awaiting your response <span class="request-heading-divider" aria-hidden="true">·</span> {{ match_request.match.get_match_type_display }}</p>
+                    </div>
+                    <a class="request-view-link" href="{% url 'matching:detail' match_request.match_id %}">View match <span aria-hidden="true">↗</span></a>
+                </header>
+                <div class="request-exchange-grid">
+                    <div class="request-exchange-side request-exchange-teach">
+                        <h4><span aria-hidden="true">↗</span> You can teach</h4>
+                        {% if match_request.match.student_one_id == user.student_profile.id %}
+                            {% for direction in match_request.match.matched_skills.student_two_learns_from_one %}<span class="request-skill-pill">{{ direction.skill }}</span>{% empty %}<span class="request-skill-none">No matched skills listed</span>{% endfor %}
+                        {% else %}
+                            {% for direction in match_request.match.matched_skills.student_one_learns_from_two %}<span class="request-skill-pill">{{ direction.skill }}</span>{% empty %}<span class="request-skill-none">No matched skills listed</span>{% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="request-exchange-side request-exchange-learn">
+                        <h4><span aria-hidden="true">↓</span> They can teach</h4>
+                        {% if match_request.match.student_one_id == user.student_profile.id %}
+                            {% for direction in match_request.match.matched_skills.student_one_learns_from_two %}<span class="request-skill-pill">{{ direction.skill }}</span>{% empty %}<span class="request-skill-none">No matched skills listed</span>{% endfor %}
+                        {% else %}
+                            {% for direction in match_request.match.matched_skills.student_two_learns_from_one %}<span class="request-skill-pill">{{ direction.skill }}</span>{% empty %}<span class="request-skill-none">No matched skills listed</span>{% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% if match_request.message %}<blockquote class="request-message"><span aria-hidden="true">“</span><p>{{ match_request.message }}</p></blockquote>{% endif %}
+                <footer class="request-card-footer">
+                    <span class="request-response-hint">A quick response helps your peer plan their next step.</span>
+                    <div class="request-response-actions">
+                        <form method="post" action="{% url 'matching:respond' match_request.pk 'reject' %}">
+                            {% csrf_token %}<button class="request-reject-button" type="submit">Decline</button>
+                        </form>
+                        <form method="post" action="{% url 'matching:respond' match_request.pk 'accept' %}">
+                            {% csrf_token %}<button class="request-accept-button" type="submit"><span aria-hidden="true">✓</span> Accept request</button>
+                        </form>
+                    </div>
+                </footer>
+            </article>
+        {% empty %}
+            <div class="request-empty-state">
+                <span class="request-empty-icon" aria-hidden="true">✉</span>
+                <div><strong>Your inbox is clear</strong><p>When another student invites you to learn together, their request will appear here.</p></div>
+                <a href="{% url 'matching:index' %}">Explore skill partners <span aria-hidden="true">→</span></a>
+            </div>
+        {% endfor %}
+    </section>
+
+    <section class="request-section request-sent-section" aria-labelledby="sent-heading">
+        <div class="request-section-heading">
+            <div>
+                <p class="request-section-kicker">FOLLOWING UP</p>
+                <h2 id="sent-heading">Requests sent <span>{{ sent_requests|length }}</span></h2>
+            </div>
+        </div>
+        {% for match_request in sent_requests %}
+            <article class="request-sent-card">
+                <span class="request-sent-avatar" aria-hidden="true">{{ match_request.receiver.full_name|default:match_request.receiver.user.username|first|upper }}</span>
+                <div class="request-sent-person">
+                    <strong>{{ match_request.receiver.full_name|default:match_request.receiver.user.username }}</strong>
+                    <small>{{ match_request.match.get_match_type_display }}</small>
+                </div>
+                <span class="request-sent-status"><span aria-hidden="true">◷</span> Pending response</span>
+                <a href="{% url 'matching:detail' match_request.match_id %}" aria-label="View match with {{ match_request.receiver.full_name|default:match_request.receiver.user.username }}">View match <span aria-hidden="true">↗</span></a>
+            </article>
+        {% empty %}
+            <div class="request-sent-empty">No outgoing requests yet. <a href="{% url 'matching:index' %}">Find a skill partner</a> to get started.</div>
+        {% endfor %}
+    </section>
+</section>
+{% endblock %}

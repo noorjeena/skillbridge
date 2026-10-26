@@ -1,0 +1,33 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}{{ page_title }} | SkillBridge Admin{% endblock %}
+{% block admin_content %}
+<section class="admin-form-panel">
+    <div class="admin-form-intro">
+        <h2>Catalogue details</h2>
+        <p>Only administrators can manage master skills. Active skills are available in student selection forms.</p>
+    </div>
+    <form method="post" class="admin-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            {% if field.name == 'is_active' %}
+                <div class="admin-checkbox-row">
+                    {{ field }}<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {% for error in field.errors %}<span class="admin-field-error">{{ error }}</span>{% endfor %}
+                </div>
+            {% else %}
+                <div class="mb-4">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                    {% for error in field.errors %}<div class="admin-field-error" role="alert">{{ error }}</div>{% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+        <div class="admin-form-actions">
+            <button class="btn btn-primary" type="submit">{{ submit_label }}</button>
+            <a class="button button-quiet" href="{% url 'admin_dashboard:skills' %}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

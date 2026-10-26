@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}Find Skill Partners | SkillBridge{% endblock %}
+{% block content %}
+<section class="matching-page mx-auto">
+    <header class="matching-intro">
+        <div class="matching-page-header">
+            <div>
+                <p class="matching-eyebrow"><span aria-hidden="true"></span> YOUR LEARNING COMMUNITY</p>
+                <h1>Recommended Skill Partners</h1>
+                <p class="matching-page-description">Meet students who can help you grow—and learn from what you already know.</p>
+            </div>
+            <a class="matching-requests-link" href="{% url 'matching:requests' %}">
+                <span aria-hidden="true">↗</span> View requests
+            </a>
+        </div>
+        <div class="matching-intro-footer">
+            <span><span class="matching-live-dot" aria-hidden="true"></span> Thoughtful matches based on your skills</span>
+            <span class="matching-count"><strong>{{ recommendations|length }}</strong> recommendation{{ recommendations|length|pluralize }}</span>
+        </div>
+    </header>
+    <p class="matching-method-note">Compatibility is a rule-based fit score calculated from skill directions and learning-level fit—not learning progress.</p>
+
+    {% for item in recommendations %}
+        <article class="match-card premium-match-card">
+            <div class="match-card-top">
+                <div class="match-partner-identity">
+                    {% if item.partner.profile_photo %}
+                        <img class="match-partner-avatar match-partner-photo" src="{{ item.partner.profile_photo.url }}" alt="Profile photo for {{ item.partner.full_name|default:item.partner.user.username }}" loading="lazy">
+                    {% else %}
+                        <span class="match-partner-avatar" aria-hidden="true">{{ item.partner.full_name|default:item.partner.user.username|first|upper }}</span>
+                    {% endif %}
+                    <div>
+                        <h2>{{ item.partner.full_name|default:item.partner.user.username }}</h2>
+                        <p>{{ item.partner.department|default:'Department not listed' }}{% if item.partner.academic_year %}<span aria-hidden="true"> · </span>{{ item.partner.academic_year }}{% endif %}</p>
+                    </div>
+                </div>
+                <div class="match-score">
+                    <strong>{{ item.match.compatibility_score }}<span>%</span></strong>
+                    <small>Compatibility</small>
+                </div>
+            </div>
+
+            <div class="match-skill-grid">
+                <div class="match-skill-group match-skill-teach">
+                    <h3><span aria-hidden="true">↗</span> Can teach</h3>
+                    {% for offered in item.partner.offered_skills.all %}
+                        <span class="match-skill-chip">{{ offered.skill.name }}<small>{{ offered.get_proficiency_display }}</small></span>
+                    {% empty %}<p class="small text-secondary">No teaching skills listed.</p>{% endfor %}
+                </div>
+                <div class="match-skill-group match-skill-learn">
+                    <h3><span aria-hidden="true">↓</span> Wants to learn</h3>
+                    {% for learning in item.partner.learning_skills.all %}
+                        <span class="match-skill-chip">{{ learning.skill.name }}<small>{{ learning.get_learning_level_display }}</small></span>
+                    {% empty %}<p class="small text-secondary">No learning skills listed.</p>{% endfor %}
+                </div>
+            </div>
+
+            <div class="match-exchange-summary">
+                <div>
+                    <span class="exchange-summary-label">YOU CAN LEARN</span>
+                    <div class="exchange-summary-skills">
+                        {% for direction in item.you_learn %}<span>{{ direction.skill }}</span>{% empty %}<span class="exchange-no-skills">No matched skills yet</span>{% endfor %}
+                    </div>
+                </div>
+                <span class="match-exchange-icon" aria-hidden="true">↔</span>
+                <div>
+                    <span class="exchange-summary-label">THEY CAN LEARN</span>
+                    <div class="exchange-summary-skills">
+                        {% for direction in item.partner_learns %}<span>{{ direction.skill }}</span>{% empty %}<span class="exchange-no-skills">No matched skills yet</span>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <footer class="match-card-footer">
+                <span class="match-type-badge {% if item.match.match_type == 'DIRECT_EXCHANGE' %}is-direct{% else %}is-one-way{% endif %}">
+                    <span aria-hidden="true">{% if item.match.match_type == 'DIRECT_EXCHANGE' %}↔{% else %}✦{% endif %}</span>
+                    {{ item.match.get_match_type_display }}
+                </span>
+                <div class="match-card-actions">
+                    {% if item.active_request %}
+                        {% if item.active_request.sender_id == user.student_profile.id %}
+                            <span class="request-state-note"><span aria-hidden="true">◷</span> Request sent · awaiting response</span>
+                        {% else %}
+                            <a class="respond-request-link" href="{% url 'matching:requests' %}">Respond to request</a>
+                        {% endif %}
+                    {% endif %}
+                    <a class="view-match-button" href="{% url 'matching:detail' item.match.pk %}">View profile <span aria-hidden="true">↗</span></a>
+                </div>
+            </footer>
+        </article>
+    {% empty %}
+        <div class="matching-empty-state">
+            <div class="matching-empty-copy">
+                <span class="matching-empty-kicker"><span aria-hidden="true">✦</span> YOUR NEXT CONNECTION STARTS HERE</span>
+                <h2>Your skill exchange story starts with you.</h2>
+                <p>Tell us what you can teach and what you’re excited to learn. We’ll use both sides to find students you can grow with.</p>
+                <div class="matching-empty-actions">
+                    <a class="matching-empty-primary" href="{% url 'skills:teach-add' %}"><span aria-hidden="true">↗</span> Add a skill to teach</a>
+                    <a class="matching-empty-secondary" href="{% url 'skills:learn-add' %}"><span aria-hidden="true">＋</span> Add a skill to learn</a>
+                </div>
+                <a class="matching-empty-manage" href="{% url 'skills:index' %}">Manage all your skills <span aria-hidden="true">→</span></a>
+            </div>
+            <div class="matching-exchange-visual" aria-label="Skill exchange example: teach Excel and learn Python">
+                <div class="exchange-visual-orbit exchange-visual-orbit-one" aria-hidden="true"></div>
+                <div class="exchange-visual-orbit exchange-visual-orbit-two" aria-hidden="true"></div>
+                <div class="exchange-visual-card exchange-visual-teach">
+                    <span class="exchange-visual-icon exchange-visual-icon-green" aria-hidden="true">↗</span>
+                    <span><small>YOU CAN TEACH</small><strong>Excel</strong></span>
+                    <span class="exchange-visual-spark" aria-hidden="true">✦</span>
+                </div>
+                <span class="exchange-visual-connector" aria-hidden="true"><span>↔</span></span>
+                <div class="exchange-visual-card exchange-visual-learn">
+                    <span class="exchange-visual-icon exchange-visual-icon-blue" aria-hidden="true">↓</span>
+                    <span><small>YOU WANT TO LEARN</small><strong>Python</strong></span>
+                    <span class="exchange-visual-spark exchange-visual-spark-blue" aria-hidden="true">✧</span>
+                </div>
+                <span class="exchange-visual-caption">SHARE WHAT YOU KNOW · GROW TOGETHER</span>
+            </div>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}

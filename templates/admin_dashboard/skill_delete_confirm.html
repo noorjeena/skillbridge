@@ -1,0 +1,25 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}Delete skill | SkillBridge Admin{% endblock %}
+{% block admin_content %}
+<section class="admin-confirm-panel">
+    {% if reference_count %}
+        <span class="admin-confirm-icon is-warning" aria-hidden="true">!</span>
+        <h2>{{ skill.name }} is in use</h2>
+        <p>This catalogue entry has {{ reference_count }} reference{{ reference_count|pluralize }} in student selections or historical matching and learning records. It cannot be permanently deleted without risking data integrity.</p>
+        <p class="admin-callout">Deactivate the skill to remove it from new student selections while preserving existing records.</p>
+        <div class="admin-confirm-actions">
+            <a class="button button-primary" href="{{ deactivate_url }}">Review deactivation</a>
+            <a class="button button-quiet" href="{% url 'admin_dashboard:skills' %}">Back to catalogue</a>
+        </div>
+    {% else %}
+        <span class="admin-confirm-icon is-danger" aria-hidden="true">!</span>
+        <h2>Delete {{ skill.name }}?</h2>
+        <p>This skill has no student or historical references. Deletion is permanent and cannot be undone.</p>
+        <form method="post" class="admin-confirm-actions">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Delete skill</button>
+            <a class="button button-quiet" href="{% url 'admin_dashboard:skills' %}">Cancel</a>
+        </form>
+    {% endif %}
+</section>
+{% endblock %}

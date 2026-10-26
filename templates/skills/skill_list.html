@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}My Skills | SkillBridge{% endblock %}
+{% block content %}
+<section class="skills-page mx-auto">
+    <header class="skills-page-hero">
+        <div class="skills-page-heading">
+            <p class="skills-page-eyebrow"><span aria-hidden="true">✦</span> YOUR SKILL PROFILE</p>
+            <h1>Build your skill exchange</h1>
+            <p>Share what you can teach and what you want to learn. The clearer your profile, the easier it is to find the right peers.</p>
+        </div>
+        <a class="skills-profile-link" href="{% url 'profile-detail' %}"><span aria-hidden="true">◎</span> View profile <span aria-hidden="true">↗</span></a>
+        <div class="skills-hero-flow" aria-hidden="true">
+            <span>SHARE</span><i></i><b>↔</b><i></i><span>GROW</span>
+        </div>
+    </header>
+
+    <div class="skills-section-grid">
+    <section class="skills-list-section skills-teach-section" aria-labelledby="teach-heading">
+        <header class="skills-list-heading">
+            <div class="skills-section-title">
+                <span class="skills-section-icon skills-section-icon-teach" aria-hidden="true">↗</span>
+                <div><p>GIVE YOUR KNOWLEDGE</p><h2 id="teach-heading">Skills you can teach</h2></div>
+            </div>
+            <a class="skills-add-link skills-add-link-teach" href="{% url 'skills:teach-add' %}"><span aria-hidden="true">＋</span> Add skill</a>
+        </header>
+        {% if offered_skills %}
+            <div class="skills-items">
+                {% for offered in offered_skills %}
+                    <article class="skill-item">
+                        <span class="skill-item-icon skill-item-icon-teach" aria-hidden="true">✦</span>
+                        <div class="skill-item-main">
+                            <div class="skill-item-title"><strong>{{ offered.skill.name }}</strong><span class="skill-level-badge skill-level-teach">{{ offered.get_proficiency_display }}</span></div>
+                            <span class="skill-item-category">{{ offered.skill.get_category_display }}</span>
+                            {% if offered.description %}<p class="skill-item-note">{{ offered.description }}</p>{% endif %}
+                        </div>
+                        <div class="skill-item-actions">
+                            <a href="{% url 'skills:teach-edit' offered.pk %}">Edit</a>
+                            <a class="skill-delete-link" href="{% url 'skills:teach-delete' offered.pk %}">Delete</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="skills-empty">
+                <span class="skills-empty-mark skills-empty-mark-teach" aria-hidden="true">↗</span>
+                <div><strong>Your knowledge can take someone further.</strong><p>Add a skill you’d be happy to share with another student.</p></div>
+                <a href="{% url 'skills:teach-add' %}" aria-label="Add a teaching skill">Add your first skill <span aria-hidden="true">→</span></a>
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="skills-list-section skills-learn-section" aria-labelledby="learn-heading">
+        <header class="skills-list-heading">
+            <div class="skills-section-title">
+                <span class="skills-section-icon skills-section-icon-learn" aria-hidden="true">↓</span>
+                <div><p>MAKE ROOM TO GROW</p><h2 id="learn-heading">Skills you want to learn</h2></div>
+            </div>
+            <a class="skills-add-link skills-add-link-learn" href="{% url 'skills:learn-add' %}"><span aria-hidden="true">＋</span> Add skill</a>
+        </header>
+        {% if learning_skills %}
+            <div class="skills-items">
+                {% for learning in learning_skills %}
+                    <article class="skill-item">
+                        <span class="skill-item-icon skill-item-icon-learn" aria-hidden="true">✧</span>
+                        <div class="skill-item-main">
+                            <div class="skill-item-title"><strong>{{ learning.skill.name }}</strong><span class="skill-level-badge skill-level-learn">{{ learning.get_learning_level_display }}</span></div>
+                            <span class="skill-item-category">{{ learning.skill.get_category_display }}</span>
+                            {% if learning.goal %}<p class="skill-item-note">{{ learning.goal }}</p>{% endif %}
+                        </div>
+                        <div class="skill-item-actions">
+                            <a href="{% url 'skills:learn-edit' learning.pk %}">Edit</a>
+                            <a class="skill-delete-link" href="{% url 'skills:learn-delete' learning.pk %}">Delete</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="skills-empty">
+                <span class="skills-empty-mark skills-empty-mark-learn" aria-hidden="true">↓</span>
+                <div><strong>What would you love to learn next?</strong><p>Set a learning goal and we’ll help you find someone to learn with.</p></div>
+                <a href="{% url 'skills:learn-add' %}" aria-label="Add a skill to learn">Add a learning goal <span aria-hidden="true">→</span></a>
+            </div>
+        {% endif %}
+    </section>
+    </div>
+</section>
+{% endblock %}

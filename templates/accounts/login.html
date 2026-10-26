@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}{% if admin_login %}Admin Login{% else %}Log in{% endif %} | SkillBridge{% endblock %}
+{% block content %}
+<div class="auth-main{% if not admin_login %} login-page{% endif %}">
+    {% if not admin_login %}
+        <aside class="login-intro" aria-label="Welcome to SkillBridge">
+            <p class="login-intro-eyebrow"><span aria-hidden="true"></span>PEER-TO-PEER LEARNING</p>
+            <h2>Build your next skill<br><span>with SkillBridge.</span></h2>
+            <p class="login-intro-copy">Pick up where you left off. Your next skill—and the people who can help you learn it—are waiting.</p>
+            <div class="login-skill-exchange" aria-hidden="true">
+                <div class="login-skill-node login-skill-node-a">A</div>
+                <div class="login-skill-connection"><span>SHARE</span><i>↔</i><span>LEARN</span></div>
+                <div class="login-skill-node login-skill-node-b">J</div>
+                <span class="login-skill-tag login-skill-tag-one">Excel</span>
+                <span class="login-skill-tag login-skill-tag-two">Python</span>
+            </div>
+            <p class="login-intro-note"><span aria-hidden="true">✳</span> Learn generously. Grow together.</p>
+        </aside>
+    {% endif %}
+    <section class="auth-panel{% if not admin_login %} login-panel{% endif %}" aria-labelledby="login-heading">
+        {% if admin_login %}<p class="auth-eyebrow">SkillBridge · Administration Portal</p>{% endif %}
+        <h1 id="login-heading">{% if admin_login %}Admin Login{% else %}Welcome back{% endif %}</h1>
+        <p class="auth-subtitle">{% if admin_login %}Sign in to manage the SkillBridge platform.{% else %}Log in to continue to SkillBridge.{% endif %}</p>
+        <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+            {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<div class="text-danger small mt-1" role="alert">{{ error }}</div>{% endfor %}
+                </div>
+            {% endfor %}
+            <button class="btn btn-primary w-100 mt-2" type="submit">Sign in</button>
+        </form>
+        {% if not admin_login %}
+            <p class="auth-footer">New to SkillBridge? <a href="{% url 'register' %}">Create an account</a></p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

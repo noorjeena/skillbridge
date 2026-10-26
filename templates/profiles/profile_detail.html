@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}Student Profile | SkillBridge{% endblock %}
+{% block content %}
+<section class="student-profile-page mx-auto">
+    <header class="student-profile-page-heading">
+        <div>
+            <p class="student-profile-eyebrow"><span aria-hidden="true"></span> YOUR LEARNING IDENTITY</p>
+            <h1>My profile</h1>
+            <p>Show your learning community who you are, what you can share, and what you’re excited to learn.</p>
+        </div>
+        <a class="student-profile-edit-button" href="{% url 'profile-edit' %}"><span aria-hidden="true">✎</span> Edit profile</a>
+    </header>
+
+    <article class="student-profile-hero">
+        <div class="student-profile-hero-top">
+            {% if profile.profile_photo %}
+                <img src="{{ profile.profile_photo.url }}" alt="Profile photo for {{ profile.display_name }}" class="student-profile-photo" width="112" height="112">
+            {% else %}
+                <div class="student-profile-photo-fallback" aria-label="Profile initials">{{ profile.display_name|first|upper }}</div>
+            {% endif %}
+            <div class="student-profile-identity">
+                <p class="student-profile-label">STUDENT PROFILE</p>
+                <h2>{{ profile.display_name }}</h2>
+                <p class="student-profile-academic">{{ profile.department|default:'Department not added' }}{% if profile.academic_year %}<span aria-hidden="true">·</span>{{ profile.academic_year }}{% endif %}</p>
+                <div class="student-profile-rating">
+                    <span aria-hidden="true">★</span>
+                    {% if rating_average %}<strong>{{ rating_average|floatformat:1 }} / 5</strong>{% else %}<strong>No ratings yet</strong>{% endif %}
+                    <span>{{ review_count }} review{{ review_count|pluralize }}</span>
+                </div>
+            </div>
+            <div class="student-profile-completion">
+                <div class="student-profile-completion-top"><span>Profile completion</span><strong>{{ profile.completion_percentage }}%</strong></div>
+                <div class="student-profile-progress" role="progressbar" aria-label="Profile completion" aria-valuenow="{{ profile.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                    <span style="width: {{ profile.completion_percentage }}%"></span>
+                </div>
+                <p>{% if profile.is_complete %}Your profile is complete{% else %}A complete profile helps build trust{% endif %}</p>
+            </div>
+        </div>
+        <div class="student-profile-about">
+            <div class="student-profile-section-heading">
+                <span class="student-profile-section-icon" aria-hidden="true">✳</span>
+                <div><p>THE PERSON BEHIND THE SKILLS</p><h3>About me</h3></div>
+            </div>
+            <p class="student-profile-bio">{{ profile.bio|default:'Add a short introduction to help your learning partners get to know you.'|linebreaksbr }}</p>
+        </div>
+    </article>
+
+    <section class="student-profile-section" aria-labelledby="offered-skills-heading">
+        <header class="student-profile-section-header">
+            <div class="student-profile-section-heading">
+                <span class="student-profile-section-icon teach-icon" aria-hidden="true">↗</span>
+                <div><p>SHARE WHAT YOU KNOW</p><h2 id="offered-skills-heading">Skills I can teach <span>{{ offered_skills|length }}</span></h2><span class="visually-hidden">Skills I Can Teach</span></div>
+            </div>
+            <a class="student-profile-add-link" href="{% url 'skills:teach-add' %}"><span aria-hidden="true">＋</span> Add a skill</a>
+        </header>
+        {% if offered_skills %}
+            <div class="student-profile-skill-grid">
+                {% for offered in offered_skills %}
+                    <article class="student-profile-skill-card teach-skill-card">
+                        <div class="student-profile-skill-symbol" aria-hidden="true">↗</div>
+                        <div class="student-profile-skill-main">
+                            <h3>{{ offered.skill.name }}</h3>
+                            <span class="student-profile-skill-level">{{ offered.get_proficiency_display }}</span>
+                            {% if offered.description %}<p>{{ offered.description }}</p>{% endif %}
+                        </div>
+                        <div class="student-profile-skill-actions">
+                            <a href="{% url 'skills:teach-edit' offered.pk %}">Edit</a>
+                            <a class="student-profile-delete-link" href="{% url 'skills:teach-delete' offered.pk %}">Delete</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="student-profile-section-empty">
+                <p>No teaching skills added yet.</p>
+                <a href="{% url 'skills:teach-add' %}">Add a skill you can teach <span aria-hidden="true">→</span></a>
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="student-profile-section" aria-labelledby="learning-skills-heading">
+        <header class="student-profile-section-header">
+            <div class="student-profile-section-heading">
+                <span class="student-profile-section-icon learn-icon" aria-hidden="true">↓</span>
+                <div><p>KEEP CURIOUS</p><h2 id="learning-skills-heading">Skills I want to learn <span>{{ learning_skills|length }}</span></h2><span class="visually-hidden">Skills I Want To Learn</span><span class="visually-hidden">Skills I want to learn</span></div>
+            </div>
+            <a class="student-profile-add-link" href="{% url 'skills:learn-add' %}"><span aria-hidden="true">＋</span> Add a skill</a>
+        </header>
+        {% if learning_skills %}
+            <div class="student-profile-skill-grid">
+                {% for learning in learning_skills %}
+                    <article class="student-profile-skill-card learn-skill-card">
+                        <div class="student-profile-skill-symbol" aria-hidden="true">↓</div>
+                        <div class="student-profile-skill-main">
+                            <h3>{{ learning.skill.name }}</h3>
+                            <span class="student-profile-skill-level">{{ learning.get_learning_level_display }}</span>
+                            {% if learning.goal %}<p>{{ learning.goal }}</p>{% endif %}
+                        </div>
+                        <div class="student-profile-skill-actions">
+                            <a href="{% url 'skills:learn-edit' learning.pk %}">Edit</a>
+                            <a class="student-profile-delete-link" href="{% url 'skills:learn-delete' learning.pk %}">Delete</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="student-profile-section-empty">
+                <p>No learning skills added yet.</p>
+                <a href="{% url 'skills:learn-add' %}">Add a skill you want to learn <span aria-hidden="true">→</span></a>
+            </div>
+        {% endif %}
+        <a class="student-profile-manage-skills" href="{% url 'skills:index' %}">Manage all skills <span aria-hidden="true">→</span></a>
+    </section>
+
+    <section class="student-profile-section student-profile-reviews" aria-labelledby="reviews-heading">
+        <header class="student-profile-section-header">
+            <div class="student-profile-section-heading">
+                <span class="student-profile-section-icon review-icon" aria-hidden="true">★</span>
+                <div><p>TRUST BUILT THROUGH LEARNING</p><h2 id="reviews-heading">Learning partner reviews <span>{{ review_count }}</span></h2></div>
+            </div>
+            {% if rating_average %}<span class="student-profile-overall-rating"><strong>★ {{ rating_average|floatformat:1 }}</strong> average</span>{% endif %}
+        </header>
+        {% for review in reviews %}
+            <article class="student-profile-review-card">
+                <div class="student-profile-review-top">
+                    <div><strong class="student-profile-review-rating"><span aria-hidden="true">★</span> {{ review.rating }} / 5</strong><span class="student-profile-review-skill">{{ review.learning_direction.skill.name }}</span></div>
+                    <time datetime="{{ review.created_at|date:'c' }}">{{ review.created_at|date:'M j, Y' }}</time>
+                </div>
+                <p class="student-profile-review-author">From {{ review.reviewer.full_name|default:review.reviewer.user.username }}</p>
+                {% if review.comment %}<p class="student-profile-review-comment">{{ review.comment|linebreaksbr }}</p>{% endif %}
+            </article>
+        {% empty %}
+            <div class="student-profile-section-empty"><p>No learning partner reviews yet.</p></div>
+        {% endfor %}
+    </section>
+</section>
+{% endblock %}

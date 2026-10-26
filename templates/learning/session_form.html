@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Edit Session{% else %}Schedule Session{% endif %} | SkillBridge{% endblock %}
+{% block content %}
+<main class="learning-session-form-page mx-auto">
+    <header class="learning-session-form-hero">
+        <div>
+            <p class="learning-session-form-eyebrow"><span aria-hidden="true"></span> MAKE TIME TO LEARN</p>
+            <h1>{% if object %}Update your session{% else %}Schedule a learning session{% endif %}</h1>
+            <p>{% if direction %}Set up a focused {{ direction.skill.name }} session with {{ direction.learner.full_name|default:direction.learner.user.username }}.{% else %}Create a shared moment for progress, practice, and questions.{% endif %}</p>
+        </div>
+        <a class="learning-session-form-back" href="{% if object %}{% url 'learning:session-detail' object.pk %}{% else %}{% url 'learning:directions' %}{% endif %}"><span aria-hidden="true">‹</span> {% if object %}Back to session{% else %}My learning{% endif %}</a>
+    </header>
+    <section class="learning-session-form-card">
+        <div class="learning-session-form-card-heading">
+            <span class="learning-session-form-icon" aria-hidden="true">◷</span>
+            <div><p>SESSION DETAILS</p><h2>Plan your time together</h2></div>
+        </div>
+        <form method="post" novalidate class="learning-session-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            <div class="learning-session-form-field{% if field.errors %} has-errors{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.name == 'description' %}<div class="learning-session-field-hint">Share what you’ll cover so your learning partner can arrive ready.</div>{% endif %}
+                {% if field.name == 'lesson' %}<div class="learning-session-field-hint">Connect this session to a lesson, or leave it as a general session.</div>{% endif %}
+                {% if field.name == 'scheduled_start' %}<div class="learning-session-field-hint">Choose when your session begins.</div>{% endif %}
+                {% if field.name == 'meeting_url' %}<div class="learning-session-field-hint">Optional. Add a Google Meet, Zoom, or other live session link.</div>{% endif %}
+                {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="learning-session-form-actions">
+            <button class="learning-session-submit-button" type="submit">{% if object %}Save session changes{% else %}Schedule session{% endif %}<span aria-hidden="true">→</span></button>
+            <a class="learning-session-cancel-button" href="{% if object %}{% url 'learning:session-detail' object.pk %}{% else %}{% url 'learning:directions' %}{% endif %}">Cancel</a>
+        </div>
+        </form>
+    </section>
+</main>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}{{ session.title }} | SkillBridge{% endblock %}
+{% block content %}
+<section class="mx-auto" style="max-width: 900px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <p class="text-uppercase small fw-semibold text-success mb-1">{{ session.learning_direction.skill.name }} session</p>
+            <h1 class="h2 fw-semibold mb-1">{{ session.title }}</h1>
+            <p class="text-secondary mb-0">{{ session.get_status_display }} | {{ session.scheduled_start|date:'M j, Y g:i A' }} – {{ session.scheduled_end|date:'M j, Y g:i A' }}</p>
+        </div>
+        {% if is_teacher %}
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-secondary" href="{% url 'learning:session-edit' session.pk %}">Edit</a>
+                <a class="btn btn-outline-danger" href="{% url 'learning:session-delete' session.pk %}">Delete</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <article class="bg-white border rounded p-4 p-md-5 mb-4">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <h2 class="h5 fw-semibold">Session details</h2>
+                {% if session.lesson %}<p class="mb-2"><strong>Lesson:</strong> {{ session.lesson.title }}</p>{% endif %}
+                <p class="mb-2"><strong>Teacher:</strong> {{ session.learning_direction.teacher.full_name|default:session.learning_direction.teacher.user.username }}</p>
+                <p class="mb-2"><strong>Learner:</strong> {{ session.learning_direction.learner.full_name|default:session.learning_direction.learner.user.username }}</p>
+                <p class="mb-2"><strong>Start:</strong> {{ session.scheduled_start|date:'M j, Y g:i A' }}</p>
+                <p class="mb-0"><strong>End:</strong> {{ session.scheduled_end|date:'M j, Y g:i A' }}</p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h5 fw-semibold">Session status</h2>
+                <span class="badge text-bg-light border mb-3">{{ session.get_status_display }}</span>
+                {% if session.meeting_url %}
+                    <p class="mb-2"><strong>Meeting link:</strong></p>
+                    <a href="{{ session.meeting_url }}" target="_blank" rel="noopener noreferrer">{{ session.meeting_url }}</a>
+                    {% if can_join %}
+                        <div class="mt-3">
+                            <a class="btn btn-primary" href="{{ session.meeting_url }}" target="_blank" rel="noopener noreferrer">Join session</a>
+                        </div>
+                    {% else %}
+                        <p class="text-secondary mt-2 mb-0">Join becomes available when the session is live.</p>
+                    {% endif %}
+                {% else %}
+                    <p class="text-secondary mb-0">Meeting link not added.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% if session.description %}
+            <hr class="my-4">
+            <h2 class="h5 fw-semibold">Description</h2>
+            <p class="mb-0">{{ session.description|linebreaksbr }}</p>
+        {% endif %}
+    </article>
+
+    {% if is_teacher %}
+        <section class="bg-white border rounded p-4 mb-4">
+            <h2 class="h5 fw-semibold">Update session status</h2>
+            <form method="post" action="{% url 'learning:session-status' session.pk %}" class="d-flex flex-wrap gap-2 align-items-center mt-3">
+                {% csrf_token %}
+                <button class="btn btn-outline-secondary" type="submit" name="action" value="complete">Mark complete</button>
+                <button class="btn btn-outline-danger" type="submit" name="action" value="cancel">Cancel session</button>
+            </form>
+        </section>
+    {% endif %}
+
+
+    <a class="btn btn-link px-0" href="{% url 'learning:sessions' %}">Back to all sessions</a>
+</section>
+{% endblock %}

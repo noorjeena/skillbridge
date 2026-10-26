@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Submissions | SkillBridge{% endblock %}
+{% block content %}
+<section class="mx-auto" style="max-width: 900px;">
+    <p class="text-uppercase small fw-semibold text-success mb-1">{{ assignment.lesson.title }}</p>
+    <h1 class="h2 fw-semibold">{{ assignment.title }} Submissions</h1>
+    <p class="text-secondary">{{ assignment.get_status_display }}{% if assignment.due_date %} | Due {{ assignment.due_date|date:'M j, Y g:i A' }}{% endif %}</p>
+    {% for item in submissions %}
+        <article class="bg-white border rounded p-4 mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h2 class="h5 fw-semibold mb-1">{{ item.learner.full_name|default:item.learner.user.username }}</h2>
+                    <span class="badge text-bg-light border">{{ item.get_status_display }}</span>
+                    {% if item.submitted_at %}<span class="small text-secondary ms-2">{{ item.submitted_at|date:'M j, Y g:i A' }}</span>{% endif %}
+                    {% if item.evaluation %}
+                        <div class="small mt-2">Evaluation: {{ item.evaluation.get_status_display }}{% if item.evaluation.score is not None %} | Score {{ item.evaluation.score }}/100{% endif %}</div>
+                        {% if item.evaluation.feedback %}<p class="small text-secondary mb-0 mt-1">{{ item.evaluation.feedback|truncatewords:25 }}</p>{% endif %}
+                    {% else %}<div class="small text-secondary mt-2">Not evaluated</div>{% endif %}
+                </div>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'learning:submission-detail' item.pk %}">View Work</a>
+                    {% if item.status == 'SUBMITTED' or item.status == 'EVALUATED' %}
+                        <a href="{% url 'learning:submission-evaluate' item.pk %}">{% if item.evaluation %}Edit Evaluation{% else %}Evaluate Submission{% endif %}</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% if item.answer_text %}<p class="mt-3 mb-0">{{ item.answer_text|truncatewords:50 }}</p>{% endif %}
+            {% if item.file %}<a class="d-inline-block mt-2" href="{% url 'learning:submission-file' item.pk %}">View / Download File</a>{% endif %}
+        </article>
+    {% empty %}
+        <div class="bg-white border rounded p-4 text-secondary">No submissions yet.</div>
+    {% endfor %}
+    {% if not submissions %}<p class="small text-secondary mt-3">No submissions have been received yet.</p>{% endif %}
+    <a class="btn btn-link px-0" href="{% url 'learning:assignment-detail' assignment.pk %}">Back to Assignment</a>
+</section>
+{% endblock %}

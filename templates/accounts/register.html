@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Create account | SkillBridge{% endblock %}
+{% block content %}
+<div class="auth-main register-page">
+    <aside class="register-intro" aria-label="Welcome to SkillBridge">
+        <p class="register-intro-eyebrow"><span aria-hidden="true"></span>PEER-TO-PEER LEARNING</p>
+        <h2>Share what you know.<br><span>Learn what’s next.</span></h2>
+        <p class="register-intro-copy">Join a community where students help each other build practical skills—one thoughtful exchange at a time.</p>
+        <div class="register-steps" aria-label="Getting started">
+            <div><span>01</span><strong>Share your skills</strong><small>What can you teach?</small></div>
+            <i aria-hidden="true"></i>
+            <div><span>02</span><strong>Find your peers</strong><small>What do you want to learn?</small></div>
+            <i aria-hidden="true"></i>
+            <div><span>03</span><strong>Grow together</strong><small>Start a skill exchange.</small></div>
+        </div>
+        <p class="register-intro-note"><span aria-hidden="true">✳</span> Start with curiosity. Build from there.</p>
+    </aside>
+    <section class="auth-panel register-panel" aria-labelledby="register-heading">
+        <p class="register-panel-kicker">YOUR LEARNING JOURNEY STARTS HERE</p>
+        <h1 id="register-heading">Create your account</h1>
+        <p class="auth-subtitle">A few details, then you’re on your way.</p>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="mb-3 register-field register-field-{{ field.name }}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.name == 'password1' and field.help_text %}
+                        <details class="register-password-tips">
+                            <summary><span class="register-tip-icon" aria-hidden="true">i</span><span>Choose a strong, unique password</span></summary>
+                            <div class="register-password-rules">{{ field.help_text|safe }}</div>
+                        </details>
+                    {% elif field.help_text %}
+                        <div class="form-text">{{ field.help_text|safe }}</div>
+                    {% endif %}
+                    {% for error in field.errors %}<div class="text-danger small mt-1" role="alert">{{ error }}</div>{% endfor %}
+                </div>
+            {% endfor %}
+            {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+            <button class="btn btn-primary w-100 mt-2 register-submit" type="submit">Create account <span aria-hidden="true">↗</span></button>
+        </form>
+        <p class="auth-footer">Already part of SkillBridge? <a href="{% url 'login' %}">Sign in</a></p>
+    </section>
+</div>
+{% endblock %}

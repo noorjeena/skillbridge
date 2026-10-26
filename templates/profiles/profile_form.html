@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profile | SkillBridge{% endblock %}
+{% block content %}
+<section class="student-profile-edit-page mx-auto">
+    <header class="student-profile-edit-heading">
+        <div>
+            <p class="student-profile-eyebrow"><span aria-hidden="true"></span> YOUR LEARNING IDENTITY</p>
+            <h1>{% if profile.full_name %}Edit profile{% else %}Complete your profile{% endif %}</h1>
+            <p>Add the details other students will see on your profile.</p>
+        </div>
+        <a class="student-profile-add-link" href="{% url 'profile-detail' %}"><span aria-hidden="true">‹</span> Back to profile</a>
+    </header>
+    <div class="student-profile-edit-card">
+    <form method="post" enctype="multipart/form-data" novalidate class="student-profile-edit-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            <div class="student-profile-edit-field">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.name == 'profile_photo' %}
+                    <div class="student-profile-photo-upload-preview">
+                        {% if profile.profile_photo %}
+                            <img id="profile-photo-preview" src="{{ profile.profile_photo.url }}" alt="Current profile photo">
+                            <span id="profile-photo-initial" hidden>{{ profile.display_name|first|upper }}</span>
+                        {% else %}
+                            <img id="profile-photo-preview" alt="Profile photo preview" hidden>
+                            <span id="profile-photo-initial">{{ profile.display_name|first|upper }}</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {{ field }}
+                {% if field.name == 'profile_photo' %}<div class="form-text">JPEG, PNG, or WebP. Maximum size: 5 MB.</div>{% endif %}
+                {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="student-profile-edit-actions">
+            <button class="student-profile-save-button" type="submit">Save profile <span aria-hidden="true">→</span></button>
+            <a class="student-profile-cancel-button" href="{% url 'profile-detail' %}">Cancel</a>
+        </div>
+    </form>
+    </div>
+</section>
+<script>
+const profilePhotoInput = document.getElementById('id_profile_photo');
+const profilePhotoPreview = document.getElementById('profile-photo-preview');
+const profilePhotoInitial = document.getElementById('profile-photo-initial');
+let profilePhotoPreviewUrl = null;
+
+if (profilePhotoInput && profilePhotoPreview && profilePhotoInitial) {
+    profilePhotoInput.addEventListener('change', () => {
+        const [photo] = profilePhotoInput.files;
+        if (!photo || !photo.type.startsWith('image/')) return;
+        if (profilePhotoPreviewUrl) URL.revokeObjectURL(profilePhotoPreviewUrl);
+        profilePhotoPreviewUrl = URL.createObjectURL(photo);
+        profilePhotoPreview.src = profilePhotoPreviewUrl;
+        profilePhotoPreview.hidden = false;
+        profilePhotoInitial.hidden = true;
+    });
+}
+</script>
+{% endblock %}

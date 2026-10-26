@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Learning Partnerships | SkillBridge{% endblock %}
+{% block content %}
+<section class="matching-page partnerships-page mx-auto">
+    <header class="matching-intro">
+        <div class="matching-page-header">
+            <div>
+                <p class="matching-eyebrow"><span aria-hidden="true"></span> GROWING TOGETHER</p>
+                <h1>Learning partnerships</h1>
+                <p class="matching-page-description">Your active learning connections, plans, sessions, and progress—all in one place.</p>
+            </div>
+            <a class="matching-requests-link" href="{% url 'matching:requests' %}"><span aria-hidden="true">↗</span> View requests</a>
+        </div>
+        <div class="matching-intro-footer">
+            <span><span class="matching-live-dot" aria-hidden="true"></span> Make progress, one shared skill at a time</span>
+            <span class="matching-count"><strong>{{ partnerships|length }}</strong> active partnership{{ partnerships|length|pluralize }}</span>
+        </div>
+    </header>
+    {% for partnership in partnerships %}
+        <article class="partnership-card premium-partnership-card">
+            <header class="partnership-card-header">
+                {% if partnership.student_one.user_id == user.id %}
+                    {% with partner=partnership.student_two %}
+                        <span class="partnership-avatar" aria-hidden="true">{{ partner.full_name|default:partner.user.username|first|upper }}</span>
+                        <div class="partnership-person">
+                            <p class="partnership-kicker">YOUR LEARNING PARTNER</p>
+                            <h2>{{ partner.full_name|default:partner.user.username }}</h2>
+                            <span class="partnership-type">{{ partnership.get_relationship_type_display }}</span>
+                        </div>
+                        {% if partnership.relationship_type == 'ONE_WAY_LEARNING' %}
+                            {% if partnership.primary_teacher_id == user.student_profile.id %}<p class="partnership-summary">You’re sharing your knowledge with {{ partner.full_name|default:partner.user.username }}.</p>{% else %}<p class="partnership-summary">{{ partner.full_name|default:partner.user.username }} is helping you learn.</p>{% endif %}
+                        {% else %}<p class="partnership-summary">You teach and learn from each other.</p>{% endif %}
+                    {% endwith %}
+                {% else %}
+                    {% with partner=partnership.student_one %}
+                        <span class="partnership-avatar" aria-hidden="true">{{ partner.full_name|default:partner.user.username|first|upper }}</span>
+                        <div class="partnership-person">
+                            <p class="partnership-kicker">YOUR LEARNING PARTNER</p>
+                            <h2>{{ partner.full_name|default:partner.user.username }}</h2>
+                            <span class="partnership-type">{{ partnership.get_relationship_type_display }}</span>
+                        </div>
+                        {% if partnership.relationship_type == 'ONE_WAY_LEARNING' %}
+                            {% if partnership.primary_teacher_id == user.student_profile.id %}<p class="partnership-summary">You’re sharing your knowledge with {{ partner.full_name|default:partner.user.username }}.</p>{% else %}<p class="partnership-summary">{{ partner.full_name|default:partner.user.username }} is helping you learn.</p>{% endif %}
+                        {% else %}<p class="partnership-summary">You teach and learn from each other.</p>{% endif %}
+                    {% endwith %}
+                {% endif %}
+                <span class="partnership-active"><span aria-hidden="true"></span> Active</span>
+            </header>
+
+            <div class="partnership-learning">
+                <div class="partnership-learning-heading">
+                    <span class="partnership-learning-icon" aria-hidden="true">↗</span>
+                    <div><p>THE EXCHANGE</p><h3>Learning directions</h3></div>
+                </div>
+                {% for direction in partnership.learning_directions.all %}
+                    <section class="partnership-direction">
+                        <div class="partnership-direction-title">
+                            <span class="partnership-direction-icon" aria-hidden="true">↗</span>
+                            <p><strong>{{ direction.teacher.full_name|default:direction.teacher.user.username }}</strong><span> teaches </span><strong>{{ direction.learner.full_name|default:direction.learner.user.username }}</strong></p>
+                            <span class="partnership-skill">{{ direction.skill.name }}</span>
+                        </div>
+                        <div class="partnership-resources">
+                            {% for plan in direction.learning_plans.all %}
+                                {% if direction.teacher.user_id == user.id or plan.status == 'ACTIVE' %}
+                                    <div class="partnership-plan">
+                                        <span class="partnership-resource-icon" aria-hidden="true">▤</span>
+                                        <div class="partnership-resource-content">
+                                            <a href="{% url 'learning:plan-detail' plan.pk %}">{{ plan.title }}</a>
+                                            <span class="partnership-resource-meta">{{ plan.completed_lessons }}/{{ plan.total_lessons }} lessons <span aria-hidden="true">·</span> {{ plan.progress_percentage }}% complete</span>
+                                        </div>
+                                    </div>
+                                    {% for lesson in plan.lessons.all %}
+                                        {% for assignment in lesson.assignments.all %}
+                                            {% if direction.teacher.user_id == user.id or assignment.status != 'DRAFT' %}
+                                                <div class="partnership-assignment">
+                                                    <span class="partnership-resource-icon" aria-hidden="true">✓</span>
+                                                    <div class="partnership-resource-content">
+                                                        <a href="{% url 'learning:assignment-detail' assignment.pk %}">{{ assignment.title }}</a>
+                                                        <span class="partnership-resource-meta">{{ assignment.get_status_display }}{% if direction.teacher.user_id == user.id %} <span aria-hidden="true">·</span> {{ assignment.submissions.count }} submission{{ assignment.submissions.count|pluralize }}{% endif %}</span>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% empty %}
+                                <p class="partnership-resource-empty">No learning plans yet.</p>
+                            {% endfor %}
+                            <div class="partnership-sessions">
+                                {% for session in direction.sessions.all %}
+                                    <div class="partnership-session">
+                                        <span class="partnership-resource-icon" aria-hidden="true">◷</span>
+                                        <div class="partnership-resource-content">
+                                            <a href="{% url 'learning:session-detail' session.pk %}">{{ session.title }}</a>
+                                            <span class="partnership-resource-meta">{{ session.get_status_display }} <span aria-hidden="true">·</span> {{ session.scheduled_start|date:'M j, Y g:i A' }}</span>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <p class="partnership-resource-empty">No sessions scheduled.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if direction.learner.user_id == user.id and direction.can_review %}
+                            <div class="partnership-review">
+                                {% if direction.viewer_review %}
+                                    <span class="partnership-review-rating">Your review <strong>{{ direction.viewer_review.rating }}/5</strong></span>
+                                    <a href="{% url 'learning:review-edit' direction.viewer_review.pk %}">Edit review</a>
+                                    <a class="partnership-review-delete" href="{% url 'learning:review-delete' direction.viewer_review.pk %}">Delete</a>
+                                {% else %}
+                                    <a href="{% url 'learning:review-add' direction.pk %}">Review teacher <span aria-hidden="true">→</span></a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </section>
+                {% empty %}
+                    <p class="partnership-resource-empty">No learning directions found.</p>
+                {% endfor %}
+            </div>
+            <div class="partnership-actions">
+                <a class="partnership-message-link" href="{% url 'chat:chat-list' %}"><span aria-hidden="true">↗</span> Open messages</a>
+                <a class="partnership-workspace-link" href="{% url 'learning:directions' %}">Learning workspace <span aria-hidden="true">→</span></a>
+            </div>
+        </article>
+    {% empty %}
+        <div class="partnership-empty-state">
+            <span class="partnership-empty-icon" aria-hidden="true">✳</span>
+            <p class="partnership-empty-eyebrow">YOUR NEXT CHAPTER STARTS HERE</p>
+            <h2>No active partnerships yet</h2>
+            <p>Find a student whose skills complement yours and turn a great match into a learning partnership.</p>
+            <a href="{% url 'matching:index' %}">Find skill partners <span aria-hidden="true">→</span></a>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% block title %}SkillBridge | Learn together, grow together{% endblock %}
+{% block page_context %}Your learning space{% endblock %}
+{% block content %}
+{% if not user.is_authenticated %}
+    <div class="home-landing">
+        <section class="home-hero" id="home" aria-labelledby="home-title">
+            <div class="home-copy">
+                <p class="home-eyebrow"><span aria-hidden="true"></span>PEER-TO-PEER LEARNING PLATFORM</p>
+                <h1 class="home-title" id="home-title">Learn together.<br><span>Grow together.</span></h1>
+                <p class="home-lead">Share what you know. Learn what you need. Connect with students who make every skill exchange meaningful.</p>
+                <div class="home-actions">
+                    <a class="home-primary-action" href="{% url 'register' %}">Start learning <span aria-hidden="true">↗</span></a>
+                    <a class="home-secondary-action" href="#how-it-works">See how it works <span aria-hidden="true">↓</span></a>
+                </div>
+                <p class="home-hero-note">No one has to learn alone.</p>
+            </div>
+            <div class="home-visual" role="img" aria-label="A visual example of two students exchanging Excel and Python skills">
+                <svg class="skill-network" viewBox="0 0 560 460" aria-hidden="true">
+                    <defs>
+                        <radialGradient id="network-glow"><stop stop-color="#755eff" stop-opacity=".28"/><stop offset="1" stop-color="#755eff" stop-opacity="0"/></radialGradient>
+                        <linearGradient id="network-line" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8d79ff" stop-opacity=".08"/><stop offset=".5" stop-color="#8d79ff" stop-opacity=".8"/><stop offset="1" stop-color="#42d8f5" stop-opacity=".1"/></linearGradient>
+                    </defs>
+                    <circle cx="286" cy="227" r="214" fill="url(#network-glow)"/>
+                    <circle cx="286" cy="227" r="170" fill="none" stroke="#a6a0ff" stroke-opacity=".12"/>
+                    <circle cx="286" cy="227" r="126" fill="none" stroke="#a6a0ff" stroke-opacity=".1" stroke-dasharray="2 9"/>
+                    <path d="M116 126 229 188M444 126 329 188M116 328 229 268M444 328 329 268" fill="none" stroke="url(#network-line)" stroke-width="1.5"/>
+                    <path d="M229 213h102M229 243h102" fill="none" stroke="#94a3ff" stroke-opacity=".65" stroke-width="1.5" stroke-dasharray="4 6"/>
+                    <circle cx="116" cy="126" r="4" fill="#9b83ff"/><circle cx="444" cy="126" r="4" fill="#48d9f5"/>
+                    <circle cx="116" cy="328" r="4" fill="#48d9f5"/><circle cx="444" cy="328" r="4" fill="#9b83ff"/>
+                    <circle cx="280" cy="227" r="86" fill="#765aff" fill-opacity=".08"/>
+                </svg>
+                <div class="exchange-panel">
+                    <div class="exchange-panel-heading">
+                        <div><span class="exchange-overline">A SKILL EXCHANGE</span><h2>Knowledge, in both directions.</h2></div>
+                        <span class="exchange-live"><i aria-hidden="true"></i> PEER MATCH</span>
+                    </div>
+                    <div class="exchange-person">
+                        <span class="exchange-avatar exchange-avatar-first" aria-hidden="true">A</span>
+                        <span class="exchange-person-copy"><strong>Alex</strong><small>Can teach</small></span>
+                        <span class="exchange-skill-tag">Excel</span>
+                    </div>
+                    <div class="exchange-bridge"><span></span><b>SKILL EXCHANGE</b><span></span></div>
+                    <div class="exchange-person">
+                        <span class="exchange-avatar exchange-avatar-second" aria-hidden="true">J</span>
+                        <span class="exchange-person-copy"><strong>Jordan</strong><small>Can teach</small></span>
+                        <span class="exchange-skill-tag exchange-skill-tag-blue">Python</span>
+                    </div>
+                    <div class="exchange-panel-footer"><span class="exchange-footer-mark" aria-hidden="true">↔</span><span>Alex learns Python. Jordan learns Excel.</span></div>
+                </div>
+                <span class="home-skill-float home-skill-float-one"><i aria-hidden="true">✳</i> Python</span>
+                <span class="home-skill-float home-skill-float-two"><i aria-hidden="true">▦</i> Excel</span>
+                <span class="home-visual-caption">DISCOVER <b>·</b> MATCH <b>·</b> EXCHANGE</span>
+            </div>
+        </section>
+
+        <section class="home-value-strip" aria-label="What you can do with SkillBridge">
+            <article class="home-value">
+                <span class="home-value-icon" aria-hidden="true">⌕</span>
+                <span><strong>Find your people</strong><small>Meet peers with complementary skills.</small></span>
+            </article>
+            <article class="home-value">
+                <span class="home-value-icon home-value-icon-cyan" aria-hidden="true">↔</span>
+                <span><strong>Exchange directly</strong><small>Teach what you know. Learn what you need.</small></span>
+            </article>
+            <article class="home-value">
+                <span class="home-value-icon home-value-icon-violet" aria-hidden="true">▤</span>
+                <span><strong>Learn with structure</strong><small>Plans, lessons, materials and practice.</small></span>
+            </article>
+            <article class="home-value">
+                <span class="home-value-icon home-value-icon-blue" aria-hidden="true">↗</span>
+                <span><strong>See your progress</strong><small>Build momentum, one skill at a time.</small></span>
+            </article>
+        </section>
+
+        <section class="home-about home-reveal" id="about" aria-labelledby="home-about-heading">
+            <p class="home-section-kicker">01 / WHY SKILLBRIDGE</p>
+            <div>
+                <h2 id="home-about-heading">Built on a simple idea: we all have something to teach.</h2>
+                <p>SkillBridge makes peer learning feel natural. Bring the skills you already have, find someone who can help with the ones you’re building, and learn together at a pace that works for you.</p>
+            </div>
+            <span class="home-about-aside">Share a skill.<br>Start a connection.<br><strong>Keep growing.</strong></span>
+        </section>
+
+        <section class="home-process home-reveal" id="how-it-works" aria-labelledby="home-process-heading">
+            <div class="home-section-heading">
+                <p class="home-section-kicker">A CLEAR PATH FROM CURIOUS TO CAPABLE</p>
+                <h2 id="home-process-heading">How SkillBridge works</h2>
+                <p>Meaningful learning, built around people—not just content.</p>
+            </div>
+            <ol class="process-list">
+                <li class="process-step"><span class="process-number">01</span><span class="process-icon" aria-hidden="true">◎</span><h3>Discover</h3><p>Create your profile and choose skills to teach and learn.</p></li>
+                <li class="process-step"><span class="process-number">02</span><span class="process-icon" aria-hidden="true">⌕</span><h3>Match</h3><p>Find peers whose skills complement your learning goals.</p></li>
+                <li class="process-step"><span class="process-number">03</span><span class="process-icon" aria-hidden="true">↗</span><h3>Connect</h3><p>Send a request and start a conversation with a peer.</p></li>
+                <li class="process-step"><span class="process-number">04</span><span class="process-icon" aria-hidden="true">▤</span><h3>Learn</h3><p>Make a plan, share materials and work through lessons.</p></li>
+                <li class="process-step"><span class="process-number">05</span><span class="process-icon" aria-hidden="true">✳</span><h3>Practice</h3><p>Apply your learning with assignments and feedback.</p></li>
+                <li class="process-step"><span class="process-number">06</span><span class="process-icon" aria-hidden="true">↗</span><h3>Grow</h3><p>Track progress and build lasting peer connections.</p></li>
+            </ol>
+        </section>
+
+        <section class="home-exchange-section home-reveal" id="skill-exchange" aria-labelledby="home-exchange-heading">
+            <div class="exchange-story-copy">
+                <p class="home-section-kicker">LEARNING GOES BOTH WAYS</p>
+                <h2 id="home-exchange-heading">Two skills.<br><span>Two learners.</span><br>One exchange.</h2>
+                <p>SkillBridge can bring together peers whose goals complement each other. Each person has something to teach—and something new to learn.</p>
+                <a class="home-inline-link" href="{% url 'register' %}">Find your skill exchange <span aria-hidden="true">↗</span></a>
+            </div>
+            <div class="exchange-story-visual" aria-label="Alex teaches Excel and learns Python; Jordan teaches Python and learns Excel">
+                <div class="exchange-story-person exchange-story-alex">
+                    <span class="exchange-story-avatar">A</span><span><strong>Alex</strong><small>STUDENT</small></span>
+                    <div class="exchange-story-skills"><span><small>CAN TEACH</small><b>Excel</b></span><span class="exchange-arrow" aria-hidden="true">↗</span><span><small>WANTS TO LEARN</small><b>Python</b></span></div>
+                </div>
+                <div class="exchange-story-center"><span>EXCHANGE</span><div><i></i><b>↔</b><i></i></div></div>
+                <div class="exchange-story-person exchange-story-jordan">
+                    <span class="exchange-story-avatar">J</span><span><strong>Jordan</strong><small>STUDENT</small></span>
+                    <div class="exchange-story-skills"><span><small>CAN TEACH</small><b>Python</b></span><span class="exchange-arrow" aria-hidden="true">↗</span><span><small>WANTS TO LEARN</small><b>Excel</b></span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-one-way home-reveal" aria-labelledby="home-one-way-heading">
+            <div class="one-way-visual" aria-hidden="true">
+                <div class="one-way-orbit one-way-orbit-outer"></div><div class="one-way-orbit one-way-orbit-inner"></div>
+                <span class="one-way-skill">Python</span><span class="one-way-person">S</span>
+                <span class="one-way-caption">A SKILL SHARED, A SKILL GAINED</span>
+            </div>
+            <div class="one-way-copy">
+                <p class="home-section-kicker">NOT EVERY LESSON NEEDS A TRADE</p>
+                <h2 id="home-one-way-heading">Sometimes, you just want to learn.</h2>
+                <p>Skill exchange can be reciprocal, but it doesn’t have to be. Learn from a peer who has the experience you’re looking for—even if you’re learning different things.</p>
+                <div class="one-way-quote"><span class="one-way-quote-mark">“</span><span><strong>I can teach Python.</strong><small>And I’d love to learn it, too.</small></span><span class="one-way-tag">PYTHON</span></div>
+            </div>
+        </section>
+
+        <section class="home-platform home-reveal" id="platform" aria-labelledby="home-platform-heading">
+            <div class="home-section-heading home-section-heading-wide">
+                <div><p class="home-section-kicker">MORE THAN A MATCH</p><h2 id="home-platform-heading">Everything you need to learn together.</h2></div>
+                <p>From the first hello to the skills you build along the way.</p>
+            </div>
+            <div class="platform-grid">
+                <article class="platform-feature platform-feature-main">
+                    <span class="platform-icon" aria-hidden="true">◉</span><p class="platform-label">START WITH THE RIGHT PEOPLE</p>
+                    <h3>Profiles &amp; skill matching</h3><p>Show what you can teach, what you want to learn, and find peers with complementary goals.</p>
+                    <div class="platform-tags"><span>Teach</span><i>+</i><span>Learn</span><i>→</i><span>Connect</span></div>
+                </article>
+                <article class="platform-feature"><span class="platform-icon platform-icon-cyan" aria-hidden="true">▤</span><p class="platform-label">MAKE A PLAN</p><h3>Learning plans &amp; lessons</h3><p>Organize your shared learning into clear steps and focused lessons.</p></article>
+                <article class="platform-feature"><span class="platform-icon platform-icon-violet" aria-hidden="true">↗</span><p class="platform-label">PRACTICE &amp; REFLECT</p><h3>Assignments &amp; feedback</h3><p>Put learning into practice and exchange thoughtful feedback.</p></article>
+                <article class="platform-feature"><span class="platform-icon platform-icon-blue" aria-hidden="true">◷</span><p class="platform-label">KEEP IN TOUCH</p><h3>Sessions &amp; messaging</h3><p>Coordinate learning sessions and keep conversations in one place.</p></article>
+                <article class="platform-feature"><span class="platform-icon platform-icon-cyan" aria-hidden="true">✳</span><p class="platform-label">BUILD TRUST</p><h3>Reviews &amp; progress</h3><p>Share peer reviews and follow your progress as you learn.</p></article>
+            </div>
+        </section>
+
+        <section class="home-community home-reveal" aria-labelledby="home-community-heading">
+            <div class="community-copy">
+                <p class="home-section-kicker">A COMMUNITY OF SHARED KNOWLEDGE</p>
+                <h2 id="home-community-heading">Your campus is full of skills waiting to be shared.</h2>
+                <p>From the first line of code to the next great presentation, there’s always something worth learning from each other.</p>
+                <a class="home-inline-link" href="{% url 'register' %}">Meet your learning community <span aria-hidden="true">↗</span></a>
+            </div>
+            <div class="community-visual" aria-label="Examples of skills students might share: Python, Excel, Django, UI and UX, Java, data analysis, and public speaking">
+                <div class="community-node community-node-center">SB</div>
+                <span class="community-skill community-skill-python">Python</span><span class="community-skill community-skill-excel">Excel</span>
+                <span class="community-skill community-skill-django">Django</span><span class="community-skill community-skill-design">UI / UX</span>
+                <span class="community-skill community-skill-java">Java</span><span class="community-skill community-skill-data">Data analysis</span>
+                <span class="community-skill community-skill-speaking">Public speaking</span>
+                <span class="community-disclaimer">EXAMPLE SKILLS · YOUR COMMUNITY IS YOURS TO SHAPE</span>
+            </div>
+        </section>
+
+        <section class="home-final-cta home-reveal" aria-labelledby="home-final-cta-heading">
+            <div class="final-cta-glow" aria-hidden="true"></div>
+            <p class="home-section-kicker">YOUR NEXT SKILL COULD COME FROM A PEER</p>
+            <h2 id="home-final-cta-heading">Share what you know.<br><span>Discover what you can learn.</span></h2>
+            <p>Start with a skill. Leave room to grow.</p>
+            <div class="final-cta-actions">
+                <a class="home-primary-action" href="{% url 'register' %}">Get started <span aria-hidden="true">↗</span></a>
+                <a class="home-final-login" href="{% url 'login' %}">Sign in to your account</a>
+            </div>
+        </section>
+        <footer class="home-footer" aria-hidden="true"></footer>
+    </div>
+{% else %}
+    {% if user.role == 'STUDENT' %}
+        <div class="student-dashboard">
+            <section class="student-welcome" aria-labelledby="student-welcome-heading">
+                <div class="student-welcome-copy">
+                    <p class="student-dashboard-eyebrow"><span aria-hidden="true"></span>YOUR SKILLBRIDGE</p>
+                    <h1 id="student-welcome-heading">Welcome back, <span>{{ user.username }}</span>.</h1>
+                    <p>Your next skill starts with a conversation. See what’s happening in your learning community.</p>
+                </div>
+            </section>
+
+            <section class="student-quick-actions" aria-label="Quick actions">
+                <a class="student-quick-action student-quick-action-primary" href="{% url 'matching:index' %}">
+                    <span class="quick-action-icon" aria-hidden="true">⌕</span><span><strong>Find a skill partner</strong><small>Explore peers who match your goals</small></span><b aria-hidden="true">↗</b>
+                </a>
+                <a class="student-quick-action" href="{% url 'skills:index' %}">
+                    <span class="quick-action-icon quick-action-icon-cyan" aria-hidden="true">✳</span><span><strong>Manage your skills</strong><small>Update what you teach and learn</small></span><b aria-hidden="true">↗</b>
+                </a>
+                <a class="student-quick-action" href="{% url 'learning:directions' %}">
+                    <span class="quick-action-icon quick-action-icon-blue" aria-hidden="true">▤</span><span><strong>Continue learning</strong><small>View your plans and lessons</small></span><b aria-hidden="true">↗</b>
+                </a>
+            </section>
+
+            <section class="student-dashboard-section" aria-labelledby="partners-heading">
+                <div class="student-section-heading">
+                    <div><p class="student-section-kicker">YOUR LEARNING COMMUNITY</p><h2 id="partners-heading">Skill partners</h2></div>
+                    <a class="student-section-link" href="{% url 'matching:index' %}">Explore matching <span aria-hidden="true">↗</span></a>
+                </div>
+                <div class="student-metric-grid">
+                    <a class="student-metric" href="{% url 'matching:index' %}">
+                        <span class="student-metric-icon" aria-hidden="true">⌕</span><span class="student-metric-label">Recommended peers</span><strong>{{ matching_dashboard.recommended }}</strong><small>Matches for your skills</small>
+                    </a>
+                    <a class="student-metric" href="{% url 'matching:requests' %}">
+                        <span class="student-metric-icon student-metric-icon-cyan" aria-hidden="true">↗</span><span class="student-metric-label">Requests sent</span><strong>{{ matching_dashboard.requests_sent }}</strong><small>Waiting for a response</small>
+                    </a>
+                    <a class="student-metric" href="{% url 'matching:requests' %}">
+                        <span class="student-metric-icon student-metric-icon-violet" aria-hidden="true">↓</span><span class="student-metric-label">Requests received</span><strong>{{ matching_dashboard.requests_received }}</strong><small>Peers reaching out</small>
+                    </a>
+                    <a class="student-metric" href="{% url 'matching:partnerships' %}">
+                        <span class="student-metric-icon student-metric-icon-blue" aria-hidden="true">↔</span><span class="student-metric-label">Active partnerships</span><strong>{{ matching_dashboard.partnerships }}</strong><small>Learning together now</small>
+                    </a>
+                </div>
+                <div class="student-dashboard-links">
+                    <a href="{% url 'matching:requests' %}">View requests <span aria-hidden="true">↗</span></a>
+                    <a href="{% url 'matching:partnerships' %}">View partnerships <span aria-hidden="true">↗</span></a>
+                </div>
+            </section>
+
+            <section class="student-dashboard-section student-sessions-section" aria-labelledby="sessions-heading">
+                <div class="student-section-heading">
+                    <div><p class="student-section-kicker">KEEP YOUR MOMENTUM</p><h2 id="sessions-heading">Upcoming sessions</h2></div>
+                    <a class="student-section-link" href="{% url 'learning:sessions' %}">View all <span aria-hidden="true">↗</span></a>
+                </div>
+                {% if upcoming_sessions %}
+                    <div class="student-session-list">
+                        {% for session in upcoming_sessions %}
+                            <article class="student-session">
+                                <span class="student-session-mark" aria-hidden="true">◷</span>
+                                <div class="student-session-info">
+                                    <strong>{{ session.title }}</strong>
+                                    <small>{{ session.learning_direction.skill.name }}{% if session.lesson %} <span aria-hidden="true">·</span> {{ session.lesson.title }}{% endif %}</small>
+                                </div>
+                                <time class="student-session-time">{{ session.scheduled_start|date:'M j, Y · g:i A' }} <span aria-hidden="true">—</span> {{ session.scheduled_end|date:'g:i A' }}</time>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="student-empty-sessions">
+                        <span class="student-empty-icon" aria-hidden="true">◷</span>
+                        <div><strong>No sessions scheduled yet</strong><p>When you arrange a learning session with a peer, it’ll show up here.</p></div>
+                        <a href="{% url 'learning:directions' %}">View your learning <span aria-hidden="true">↗</span></a>
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    {% else %}
+        <section class="row align-items-center py-5">
+            <div class="col-lg-8">
+                <p class="text-uppercase small fw-semibold text-success mb-2">A campus skill exchange</p>
+                <h1 class="display-4 fw-semibold">Learn from each other.<br>Build skills together.</h1>
+                <p class="lead text-secondary mt-3">SkillBridge helps students share what they know and learn what they need, peer to peer.</p>
+                <p class="mt-4">You are signed in as <strong>{{ user.get_role_display }}</strong>.</p>
+            </div>
+        </section>
+    {% endif %}
+{% endif %}
+{% endblock %}

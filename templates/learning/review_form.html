@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Edit review{% else %}Review teacher{% endif %} | SkillBridge{% endblock %}
+{% block content %}
+<section class="auth-panel mx-auto p-4 p-md-5">
+    <p class="text-uppercase small fw-semibold text-success mb-1">{{ direction.skill.name }} learning direction</p>
+    <h1 class="h3 fw-semibold mb-2">{% if object %}Edit your review{% else %}Review your teacher{% endif %}</h1>
+    <p class="text-secondary">For {{ direction.teacher.full_name|default:direction.teacher.user.username }} · A completed session has taken place.</p>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Save review</button>
+            <a class="btn btn-outline-secondary" href="{% url 'learning:directions' %}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

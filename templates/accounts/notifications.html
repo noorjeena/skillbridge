@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Notifications | SkillBridge{% endblock %}
+{% block content %}
+<section class="notifications-page mx-auto">
+    <header class="notifications-intro">
+        <div class="notifications-heading">
+            <div>
+                <p class="notifications-eyebrow"><span aria-hidden="true"></span> YOUR SKILLBRIDGE UPDATES</p>
+                <h1>Notifications</h1>
+                <p>Important moments from your learning community, all in one place.</p>
+            </div>
+            {% if unread_notification_count %}
+                <form method="post" action="{% url 'notifications-mark-all-read' %}">
+                    {% csrf_token %}
+                    <button class="notifications-mark-all" type="submit"><span aria-hidden="true">✓</span> Mark all as read</button>
+                </form>
+            {% endif %}
+        </div>
+        <div class="notifications-summary">
+            <span><span class="notifications-live-dot" aria-hidden="true"></span> Stay in the loop as you learn</span>
+            <span><strong>{{ unread_notification_count }}</strong> unread notification{{ unread_notification_count|pluralize }}</span>
+        </div>
+    </header>
+
+    <section class="notifications-list" aria-label="Your notifications">
+        {% for notification in notifications %}
+            <article class="notification-card{% if not notification.is_read %} is-unread{% endif %}">
+                <span class="notification-type-icon{% if not notification.is_read %} is-unread{% endif %}" aria-hidden="true">
+                    {% if notification.is_read %}✓{% else %}✦{% endif %}
+                </span>
+                <div class="notification-content">
+                    <div class="notification-title-row">
+                        <h2>{{ notification.title }}</h2>
+                        {% if not notification.is_read %}<span class="notification-new-label"><span aria-hidden="true"></span> New</span>{% endif %}
+                    </div>
+                    <p class="notification-message">{{ notification.message }}</p>
+                    <div class="notification-metadata">
+                        <span class="notification-category">{{ notification.get_notification_type_display }}</span>
+                        <span aria-hidden="true">·</span>
+                        <time datetime="{{ notification.created_at|date:'c' }}">{{ notification.created_at|date:'M j, Y · g:i A' }}</time>
+                    </div>
+                </div>
+                <div class="notification-actions">
+                    {% if notification.related_url %}
+                        <a class="notification-open-link" href="{% url 'notification-open' notification.pk %}">View update <span aria-hidden="true">→</span></a>
+                    {% endif %}
+                    {% if not notification.is_read %}
+                        <form method="post" action="{% url 'notification-read' notification.pk %}">
+                            {% csrf_token %}
+                            <button class="notification-mark-read" type="submit">Mark read</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <div class="notifications-empty">
+                <span class="notifications-empty-icon" aria-hidden="true">✦</span>
+                <p class="notifications-empty-eyebrow">ALL CAUGHT UP</p>
+                <h2>Your updates will appear here</h2>
+                <p>New learning, messages, and partnership updates will find their way here. You can get back to your learning while you wait.</p>
+                <a href="{% url 'learning:directions' %}">Go to my learning <span aria-hidden="true">→</span></a>
+            </div>
+        {% endfor %}
+    </section>
+
+    {% if is_paginated %}
+        <nav class="notifications-pagination" aria-label="Notification pages">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}"><span aria-hidden="true">←</span> Newer</a>
+            {% else %}<span class="notifications-pagination-disabled"></span>{% endif %}
+            <span class="notifications-page-count">Page <strong>{{ page_obj.number }}</strong> of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Older <span aria-hidden="true">→</span></a>
+            {% else %}<span class="notifications-pagination-disabled"></span>{% endif %}
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}

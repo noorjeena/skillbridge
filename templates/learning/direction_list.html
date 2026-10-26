@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}My Learning | SkillBridge{% endblock %}
+{% block content %}
+<section class="learning-workspace mx-auto">
+    <header class="learning-workspace-intro">
+        <div class="learning-workspace-heading">
+            <div>
+                <p class="learning-workspace-eyebrow"><span aria-hidden="true"></span> YOUR LEARNING JOURNEY</p>
+                <h1>My learning</h1>
+                <p class="learning-workspace-description">Keep your lessons, plans, and live sessions moving forward with your learning partners.</p>
+            </div>
+            <a class="learning-partnership-link" href="{% url 'matching:partnerships' %}"><span aria-hidden="true">↗</span> My partnerships</a>
+        </div>
+        <div class="learning-workspace-summary">
+            <span><span class="learning-live-indicator" aria-hidden="true"></span> Progress grows with every exchange</span>
+            <span><strong>{{ directions|length }}</strong> active learning direction{{ directions|length|pluralize }}</span>
+        </div>
+    </header>
+
+    {% for direction in directions %}
+        <article class="learning-direction-card">
+            <header class="learning-direction-header">
+                <span class="learning-direction-avatar" aria-hidden="true">
+                    {% if direction.teacher.user_id == user.id %}{{ direction.learner.full_name|default:direction.learner.user.username|first|upper }}{% else %}{{ direction.teacher.full_name|default:direction.teacher.user.username|first|upper }}{% endif %}
+                </span>
+                <div class="learning-direction-person">
+                    {% if direction.teacher.user_id == user.id %}
+                        <p class="learning-role-label">YOU’RE THE TEACHER</p>
+                        <h2>You teach {{ direction.learner.full_name|default:direction.learner.user.username }}</h2>
+                    {% else %}
+                        <p class="learning-role-label">YOUR LEARNING PARTNER</p>
+                        <h2>{{ direction.teacher.full_name|default:direction.teacher.user.username }} teaches you</h2>
+                    {% endif %}
+                    <div class="learning-direction-meta">
+                        <span class="learning-skill-tag">{{ direction.skill.name }}</span>
+                        <span class="learning-status"><span aria-hidden="true"></span>{{ direction.get_status_display }}</span>
+                    </div>
+                </div>
+                {% if direction.teacher.user_id == user.id %}
+                    <a class="learning-primary-action" href="{% url 'learning:plan-create' %}"><span aria-hidden="true">＋</span> Create learning plan</a>
+                {% endif %}
+            </header>
+
+            <section class="learning-workspace-section" aria-labelledby="plans-heading-{{ direction.pk }}">
+                <div class="learning-section-heading">
+                    <div class="learning-section-icon learning-plan-icon" aria-hidden="true">▤</div>
+                    <div><p>STRUCTURE YOUR PROGRESS</p><h3 id="plans-heading-{{ direction.pk }}">Learning plans</h3></div>
+                </div>
+                <div class="learning-plan-list">
+                    {% for plan in direction.learning_plans.all %}
+                        {% if direction.teacher.user_id == user.id or plan.status == 'ACTIVE' %}
+                            <div class="learning-plan-item">
+                                <div class="learning-plan-topline">
+                                    <div class="learning-plan-info">
+                                        <a class="learning-resource-title" href="{% url 'learning:plan-detail' plan.pk %}">{{ plan.title }}</a>
+                                        <span class="learning-plan-status">{{ plan.get_status_display }}</span>
+                                        <p>{{ plan.completed_lessons }} of {{ plan.total_lessons }} lessons completed <span aria-hidden="true">·</span> {{ plan.progress_percentage }}%</p>
+                                    </div>
+                                    {% if direction.teacher.user_id == user.id %}<a class="learning-manage-link" href="{% url 'learning:plan-detail' plan.pk %}">Manage plan <span aria-hidden="true">→</span></a>{% endif %}
+                                </div>
+                                <div class="learning-progress-track" role="progressbar" aria-label="{{ plan.title }} progress" aria-valuenow="{{ plan.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="learning-progress-fill" style="width: {{ plan.progress_percentage }}%"></div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <p class="learning-section-empty">No learning plan yet. Your teacher can create one to map out the journey.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="learning-workspace-section learning-sessions-section" aria-labelledby="sessions-heading-{{ direction.pk }}">
+                <div class="learning-section-heading">
+                    <div class="learning-section-icon learning-session-icon" aria-hidden="true">◷</div>
+                    <div><p>MEET AND PRACTICE</p><h3 id="sessions-heading-{{ direction.pk }}">Live sessions</h3></div>
+                    {% if direction.teacher.user_id == user.id %}
+                        <a class="learning-secondary-action" href="{% url 'learning:session-add' direction.pk %}">Schedule session <span aria-hidden="true">＋</span></a>
+                    {% endif %}
+                </div>
+                <div class="learning-session-list">
+                    {% with sessions=direction.sessions.all %}
+                        {% for session in sessions %}
+                            <div class="learning-session-item">
+                                <span class="learning-session-dot" aria-hidden="true"></span>
+                                <div class="learning-session-info">
+                                    <a class="learning-resource-title" href="{% url 'learning:session-detail' session.pk %}">{{ session.title }}</a>
+                                    <p>{% if session.lesson %}{{ session.lesson.title }} <span aria-hidden="true">·</span> {% endif %}{{ session.scheduled_start|date:'M j, Y g:i A' }} – {{ session.scheduled_end|date:'M j, Y g:i A' }}</p>
+                                </div>
+                                <span class="learning-session-status">{{ session.get_status_display }}</span>
+                            </div>
+                        {% empty %}
+                            <p class="learning-section-empty">No sessions scheduled yet.</p>
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+                {% if direction.teacher.user_id != user.id %}
+                    <a class="learning-all-sessions-link" href="{% url 'learning:sessions' %}">View all sessions <span aria-hidden="true">→</span></a>
+                {% endif %}
+            </section>
+
+            {% if direction.learner.user_id == user.id and direction.can_review %}
+                <section class="learning-review-panel" aria-labelledby="review-heading-{{ direction.pk }}">
+                    <div class="learning-review-copy">
+                        <span class="learning-review-icon" aria-hidden="true">✳</span>
+                        <div><p>HELP YOUR COMMUNITY GROW</p><h3 id="review-heading-{{ direction.pk }}">Teacher review</h3></div>
+                    </div>
+                    {% if direction.viewer_review %}
+                        <div class="learning-review-existing">
+                            <p><strong>{{ direction.viewer_review.rating }} / 5</strong>{% if direction.viewer_review.comment %}<span>“{{ direction.viewer_review.comment }}”</span>{% endif %}</p>
+                            <a href="{% url 'learning:review-edit' direction.viewer_review.pk %}">Edit review</a>
+                            <a class="learning-review-delete" href="{% url 'learning:review-delete' direction.viewer_review.pk %}">Delete review</a>
+                        </div>
+                    {% else %}
+                        <p class="learning-review-prompt">A session has been completed. Share feedback with your teacher.</p>
+                        <a class="learning-secondary-action" href="{% url 'learning:review-add' direction.pk %}">Review teacher <span aria-hidden="true">→</span></a>
+                    {% endif %}
+                </section>
+            {% endif %}
+        </article>
+    {% empty %}
+        <div class="learning-empty-state">
+            <span class="learning-empty-icon" aria-hidden="true">✳</span>
+            <p class="learning-empty-eyebrow">A NEW SKILL IS WAITING</p>
+            <h2>Your learning journey starts with a connection</h2>
+            <p>You don’t have an active learning direction yet. Accept a match request to start learning together, or explore students with complementary skills.</p>
+            <a href="{% url 'matching:index' %}">Find skill partners <span aria-hidden="true">→</span></a>
+        </div>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}Chat with {{ other_student.full_name|default:other_student.user.username }} | SkillBridge{% endblock %}
+{% block content %}
+<main class="chat-thread-page mx-auto">
+    <header class="chat-thread-header">
+        <div class="chat-thread-person">
+            <span class="chat-thread-avatar" aria-hidden="true">{{ other_student.full_name|default:other_student.user.username|first|upper }}</span>
+            <div class="chat-thread-person-copy">
+                <p class="chat-thread-eyebrow">LEARNING PARTNERSHIP</p>
+                <h1>{{ other_student.full_name|default:other_student.user.username }}</h1>
+                <p>{{ conversation.partnership.get_relationship_type_display }} <span aria-hidden="true">·</span> Keep learning together</p>
+            </div>
+        </div>
+        <a href="{% url 'chat:chat-list' %}" class="chat-thread-back"><span aria-hidden="true">‹</span> All messages</a>
+    </header>
+
+    <section class="chat-thread-card" aria-label="Conversation with {{ other_student.full_name|default:other_student.user.username }}">
+        <div class="chat-thread-context">
+            <span class="chat-thread-context-icon" aria-hidden="true">✦</span>
+            <p>A space to share ideas, ask questions, and make progress together.</p>
+            <span class="chat-thread-context-label">{{ conversation.partnership.get_relationship_type_display }}</span>
+        </div>
+        <div id="chat-messages" class="chat-thread-messages" role="log" aria-live="polite" aria-relevant="additions text">
+            {% for message in messages %}
+                <div class="chat-message-row{% if message.sender == user %} is-mine{% endif %}">
+                    <div class="chat-message-meta">
+                        {% if message.sender == user %}
+                            You
+                        {% else %}
+                            {{ message.sender.student_profile.full_name|default:message.sender.username }}
+                        {% endif %}
+                        <time datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:'M j, g:i A' }}</time>
+                    </div>
+                    <div class="chat-message-bubble">{{ message.content|linebreaksbr }}</div>
+                </div>
+            {% empty %}
+                <div class="chat-thread-empty">
+                    <span aria-hidden="true">✦</span>
+                    <strong>Your conversation starts here</strong>
+                    <p>Send a warm hello and start planning what you’ll learn together.</p>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="chat-compose-shell">
+            <form id="chat-form" method="post" class="chat-compose">
+                {% csrf_token %}
+                <label class="visually-hidden" for="message-input">Write a message</label>
+                <textarea id="message-input" name="message" rows="2" maxlength="2000" placeholder="Write a message…" required></textarea>
+                <button type="submit" class="chat-send-button"><span aria-hidden="true">✦</span> Send message</button>
+            </form>
+            <p class="chat-compose-hint">Press send when you’re ready to share.</p>
+        </div>
+    </section>
+</main>
+<script>
+const conversationId = {{ conversation.pk }};
+const currentUserId = {{ user.pk }};
+const messageList = document.getElementById('chat-messages');
+const form = document.getElementById('chat-form');
+const input = document.getElementById('message-input');
+let socket = null;
+let reconnectTimer = null;
+
+function formatDisplayTime(isoString) {
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    }).format(date);
+}
+
+function createMessageBubble(message) {
+    const wrapper = document.createElement('div');
+    const isMine = String(message.sender) === String(currentUserId);
+    wrapper.className = `chat-message-row${isMine ? ' is-mine' : ''}`;
+    const meta = document.createElement('div');
+    meta.className = 'chat-message-meta';
+    meta.append(document.createTextNode(`${isMine ? 'You' : message.sender_name} `));
+    const time = document.createElement('time');
+    time.dateTime = message.created_at;
+    time.textContent = formatDisplayTime(message.created_at);
+    meta.appendChild(time);
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-message-bubble';
+    bubble.textContent = message.content;
+    wrapper.appendChild(meta);
+    wrapper.appendChild(bubble);
+    return wrapper;
+}
+
+function appendMessage(message) {
+    if (!message || !message.content) return;
+    const element = createMessageBubble(message);
+    messageList.appendChild(element);
+    messageList.scrollTop = messageList.scrollHeight;
+}
+
+function openSocket() {
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const socketUrl = `${wsProtocol}://${window.location.host}/ws/chat/${conversationId}/`;
+    socket = new WebSocket(socketUrl);
+
+    socket.onopen = () => {
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
+    };
+
+    socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (message.error) {
+            alert(message.error);
+            return;
+        }
+        if (message && message.id) {
+            appendMessage(message);
+        }
+    };
+
+    socket.onclose = () => {
+        if (!reconnectTimer) {
+            reconnectTimer = setTimeout(() => {
+                openSocket();
+            }, 2000);
+        }
+    };
+}
+
+form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const content = input.value.trim();
+    if (!content) {
+        alert('Message content is required.');
+        return;
+    }
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        alert('Connection is not ready. Please try again shortly.');
+        return;
+    }
+    socket.send(JSON.stringify({ message: content }));
+    input.value = '';
+});
+
+openSocket();
+window.addEventListener('beforeunload', () => {
+    if (socket) socket.close();
+});
+</script>
+{% endblock %}

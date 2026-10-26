@@ -1,0 +1,75 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}{{ page_title }} | SkillBridge Admin{% endblock %}
+{% block admin_actions %}
+    {% if create_url %}<a class="button button-primary button-small" href="{{ create_url }}">{{ create_label }}</a>{% endif %}
+{% endblock %}
+{% block admin_content %}
+{% if notification_total or message_count %}
+    <div class="admin-inline-stats">
+        {% if notification_total %}<span>{{ notification_total }} total · {{ notification_unread }} unread · {{ notification_read }} read</span>{% endif %}
+        {% if message_count %}<span>{{ message_count }} messages · private content hidden</span>{% endif %}
+    </div>
+{% endif %}
+<section class="admin-panel admin-table-panel">
+    <form class="admin-table-toolbar" method="get">
+        <label class="visually-hidden" for="admin-search">Search {{ page_title|lower }}</label>
+        <input class="form-control admin-search" id="admin-search" type="search" name="q" value="{{ current_search }}" placeholder="{{ search_placeholder }}">
+        {% if filter_options %}
+            <label class="visually-hidden" for="admin-filter">Filter {{ page_title|lower }}</label>
+            <select class="form-select admin-filter" id="admin-filter" name="filter">
+                {% for value, label in filter_options %}
+                    <option value="{{ value }}" {% if value == current_filter %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+        <button class="btn btn-outline-secondary" type="submit">Apply</button>
+        {% if current_search or current_filter %}<a class="admin-clear-link" href="?">Clear</a>{% endif %}
+    </form>
+    {% if rows %}
+        <div class="admin-table-scroll">
+            <table class="table admin-table">
+                <thead><tr>{% for column in columns %}<th scope="col">{{ column }}</th>{% endfor %}{% if rows.0.edit_url or rows.0.detail_url %}<th scope="col"><span class="visually-hidden">Actions</span></th>{% endif %}</tr></thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            {% for cell in row.cells %}
+                                <td>
+                                    {% if cell.badge %}<span class="admin-status {{ cell.badge }}">{{ cell.text }}</span>
+                                    {% elif cell.strong %}<strong>{{ cell.text }}</strong>{% if cell.secondary %}<small class="admin-cell-secondary">{{ cell.secondary }}</small>{% endif %}
+                                    {% else %}{{ cell }}{% endif %}
+                                </td>
+                            {% endfor %}
+                            {% if row.edit_url or row.detail_url %}
+                                <td class="admin-actions-cell">
+                                    {% if row.detail_url %}<a class="admin-row-action" href="{{ row.detail_url }}">View</a>{% endif %}
+                                    {% if row.edit_url %}<a class="admin-row-action" href="{{ row.edit_url }}">Edit</a>{% endif %}
+                                    {% if row.toggle_url %}<a class="admin-row-action" href="{{ row.toggle_url }}">{{ row.toggle_label }}</a>{% endif %}
+                                    {% if row.delete_url %}<a class="admin-row-action admin-danger-link" href="{{ row.delete_url }}">Delete</a>{% endif %}
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if is_paginated %}
+            <nav class="admin-pagination" aria-label="{{ page_title }} pages">
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} results</span>
+                <div>
+                    {% if page_obj.has_previous %}<a class="admin-page-link" href="?q={{ current_search|urlencode }}&amp;filter={{ current_filter|urlencode }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+                    {% if page_obj.has_next %}<a class="admin-page-link" href="?q={{ current_search|urlencode }}&amp;filter={{ current_filter|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+                </div>
+            </nav>
+        {% else %}
+            <div class="admin-pagination"><span>{{ rows|length }} result{{ rows|length|pluralize }}</span></div>
+        {% endif %}
+    {% else %}
+        <div class="admin-empty-state">
+            <span class="admin-empty-mark" aria-hidden="true">—</span>
+            <h2>No results found</h2>
+            <p>Try changing the search or filter, or check back when new activity is available.</p>
+            {% if create_url %}<a class="button button-primary button-small" href="{{ create_url }}">{{ create_label }}</a>{% endif %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

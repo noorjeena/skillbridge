@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Evaluate Submission | SkillBridge{% endblock %}
+{% block content %}
+<section class="auth-panel mx-auto p-4 p-md-5">
+    <p class="text-uppercase small fw-semibold text-success mb-1">{{ submission.assignment.title }}</p>
+    <h1 class="h3 fw-semibold mb-1">{% if evaluation %}Edit Evaluation{% else %}Evaluate Submission{% endif %}</h1>
+    <p class="text-secondary mb-4">Learner: {{ submission.learner.full_name|default:submission.learner.user.username }}</p>
+    {% if submission.answer_text %}<div class="bg-light border rounded p-3 mb-4">{{ submission.answer_text|linebreaksbr }}</div>{% endif %}
+    {% if submission.file %}<a class="d-inline-block mb-4" href="{% url 'learning:submission-file' submission.pk %}">View / Download Submitted File</a>{% endif %}
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.name == 'score' %}<div class="form-text">Optional score from 0 to 100.</div>{% endif %}
+                {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary" type="submit">Save Evaluation</button>
+            <a class="btn btn-outline-secondary" href="{% url 'learning:submission-detail' submission.pk %}">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

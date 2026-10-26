@@ -1,0 +1,39 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}Student profile | SkillBridge Admin{% endblock %}
+{% block admin_actions %}<a class="button button-quiet button-small" href="{% url 'admin_dashboard:users' %}">Back to users</a>{% endblock %}
+{% block admin_content %}
+<div class="admin-user-detail-grid">
+    <section class="admin-panel admin-student-panel">
+        <div class="admin-student-heading">
+            <span class="admin-large-avatar">{{ profile.full_name|default:student.username|first|upper }}</span>
+            <div><h2>{{ profile.full_name|default:student.username }}</h2><p>{{ student.email|default:"No email provided" }}</p></div>
+            <span class="admin-status {% if student.is_active %}is-success{% else %}is-muted{% endif %}">{% if student.is_active %}Active{% else %}Inactive{% endif %}</span>
+        </div>
+        <dl class="admin-definition-list">
+            <div><dt>Username</dt><dd>{{ student.username }}</dd></div>
+            <div><dt>Department</dt><dd>{{ profile.department|default:"—" }}</dd></div>
+            <div><dt>Academic year</dt><dd>{{ profile.academic_year|default:"—" }}</dd></div>
+            <div><dt>Profile completion</dt><dd>{{ profile.completion_percentage|default:0 }}%</dd></div>
+            <div><dt>Joined</dt><dd>{{ student.date_joined|date:"M j, Y" }}</dd></div>
+            <div><dt>Learning partnerships</dt><dd>{{ partnership_count }}</dd></div>
+            <div><dt>Learning directions</dt><dd>{{ direction_count }}</dd></div>
+            <div><dt>Sessions</dt><dd>{{ session_count }}</dd></div>
+            <div><dt>Reviews written or received</dt><dd>{{ review_count }}</dd></div>
+        </dl>
+    </section>
+    <div class="admin-user-skills">
+        <section class="admin-panel">
+            <div class="admin-panel-heading"><div><h2>Skills they teach</h2><p>Active and historical selections</p></div></div>
+            {% if offered_skills %}
+                <ul class="admin-compact-list">{% for offered in offered_skills %}<li><span><strong>{{ offered.skill.name }}</strong><small>{{ offered.skill.get_category_display }}</small></span><span class="admin-list-meta">{{ offered.get_proficiency_display }}</span></li>{% endfor %}</ul>
+            {% else %}<p class="admin-empty">No teaching skills listed.</p>{% endif %}
+        </section>
+        <section class="admin-panel">
+            <div class="admin-panel-heading"><div><h2>Skills they want to learn</h2><p>Student learning interests</p></div></div>
+            {% if learning_skills %}
+                <ul class="admin-compact-list">{% for learning in learning_skills %}<li><span><strong>{{ learning.skill.name }}</strong><small>{{ learning.skill.get_category_display }}</small></span><span class="admin-list-meta">{{ learning.get_learning_level_display }}</span></li>{% endfor %}</ul>
+            {% else %}<p class="admin-empty">No learning skills listed.</p>{% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

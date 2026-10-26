@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Assignments | SkillBridge{% endblock %}
+{% block content %}
+<section class="mx-auto" style="max-width: 900px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <p class="text-uppercase small fw-semibold text-success mb-1">{{ lesson.learning_plan.learning_direction.skill.name }} | Lesson {{ lesson.order }}</p>
+            <h1 class="h2 fw-semibold mb-0">{{ lesson.title }} Assignments</h1>
+        </div>
+        {% if is_teacher %}<a class="btn btn-primary" href="{% url 'learning:assignment-add' lesson.pk %}">Add Assignment</a>{% endif %}
+    </div>
+    {% for assignment in assignments %}
+        <article class="bg-white border rounded p-4 mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <h2 class="h5 fw-semibold"><a class="text-decoration-none" href="{% url 'learning:assignment-detail' assignment.pk %}">{{ assignment.title }}</a></h2>
+                    <span class="badge text-bg-light border">{{ assignment.get_status_display }}</span>
+                    {% if assignment.due_date %}<span class="small text-secondary ms-2">Due {{ assignment.due_date|date:'M j, Y g:i A' }}</span>{% endif %}
+                </div>
+                {% if is_teacher %}
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'learning:assignment-edit' assignment.pk %}">Edit</a>
+                        <a href="{% url 'learning:assignment-submissions' assignment.pk %}">Submissions</a>
+                    </div>
+                {% endif %}
+            </div>
+            <p class="text-secondary mt-2 mb-0">{{ assignment.instructions|truncatewords:28 }}</p>
+        </article>
+    {% empty %}
+        <div class="bg-white border rounded p-4 text-secondary">No assignments are available for this lesson.</div>
+    {% endfor %}
+    <a class="btn btn-link px-0" href="{% url 'learning:lesson-detail' lesson.pk %}">Back to Lesson</a>
+</section>
+{% endblock %}

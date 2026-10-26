@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block page_context %}Admin workspace · {{ page_title }}{% endblock %}
+{% block extra_css %}
+<link href="{% static 'css/admin.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="admin-content">
+    <header class="admin-page-header">
+        <div>
+            <p class="admin-eyebrow">SkillBridge administration</p>
+            <h1>{{ page_title }}</h1>
+            {% if page_description %}<p>{{ page_description }}</p>{% endif %}
+        </div>
+        <div class="admin-page-actions">{% block admin_actions %}{% endblock %}</div>
+    </header>
+    {% block admin_content %}{% endblock %}
+</div>
+{% endblock %}

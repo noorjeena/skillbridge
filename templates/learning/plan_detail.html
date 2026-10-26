@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}{{ plan.title }} | SkillBridge{% endblock %}
+{% block content %}
+<main class="learning-plan-detail-page mx-auto">
+    <header class="learning-plan-detail-hero">
+        <div class="learning-plan-detail-heading">
+            <div>
+                <p class="learning-plan-detail-eyebrow"><span aria-hidden="true"></span> {{ plan.learning_direction.skill.name }} LEARNING PLAN</p>
+                <h1>{{ plan.title }}</h1>
+                <div class="learning-plan-detail-byline">
+                    <span class="learning-plan-status-pill">{{ plan.get_status_display }}</span>
+                    <span>Teacher: {{ plan.learning_direction.teacher.full_name|default:plan.learning_direction.teacher.user.username }}</span>
+                </div>
+                {% if plan.description %}<p class="learning-plan-detail-description">{{ plan.description|linebreaksbr }}</p>{% endif %}
+            </div>
+            {% if is_teacher %}
+                <div class="learning-plan-detail-actions">
+                    <a class="learning-plan-action-primary" href="{% url 'learning:lesson-add' plan.pk %}"><span aria-hidden="true">＋</span> Add Lesson</a>
+                    <a class="learning-plan-action-glass" href="{% url 'learning:session-add' plan.learning_direction_id %}"><span aria-hidden="true">◷</span> Schedule Session</a>
+                    <a class="learning-plan-action-glass" href="{% url 'learning:plan-edit' plan.pk %}"><span aria-hidden="true">✎</span> Edit Plan</a>
+                </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <section class="learning-plan-progress-card" aria-label="Learning plan progress">
+        <div class="learning-plan-progress-copy">
+            <div class="learning-plan-progress-title">
+                <span class="learning-plan-progress-icon" aria-hidden="true">✦</span>
+                <div><p>YOUR LEARNING JOURNEY</p><h2>Learning progress</h2></div>
+            </div>
+            <strong class="learning-plan-progress-value">{{ plan.progress_percentage }}%</strong>
+        </div>
+        <div class="learning-plan-progress-track" role="progressbar" aria-label="Learning plan progress" aria-valuenow="{{ plan.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
+            <span style="width: {{ plan.progress_percentage }}%"></span>
+        </div>
+        <div class="learning-plan-progress-footer">
+            <span><strong>{{ plan.completed_lessons }}</strong> of {{ plan.total_lessons }} lessons completed</span>
+            <span><strong>{{ plan_accessed_file_count }}</strong> / {{ plan_file_count }} PDFs accessed</span>
+        </div>
+        <p class="learning-plan-progress-note">A lesson is complete when the learner submits every active assignment. Opening or downloading a PDF is tracked separately as resource access.</p>
+    </section>
+
+    <section class="learning-plan-roadmap" aria-labelledby="plan-roadmap-heading">
+        <header class="learning-plan-section-heading">
+            <div class="learning-plan-section-heading-main">
+                <span class="learning-plan-section-icon" aria-hidden="true">▤</span>
+                <div><p>ONE STEP AT A TIME</p><h2 id="plan-roadmap-heading">Learning roadmap <span>{{ plan.total_lessons }}</span></h2></div>
+            </div>
+            {% if is_teacher %}<a class="learning-plan-section-action" href="{% url 'learning:lesson-add' plan.pk %}"><span aria-hidden="true">＋</span> Add Lesson</a>{% endif %}
+        </header>
+
+        {% for lesson in plan.lessons.all %}
+            <article class="learning-roadmap-lesson">
+                <div class="learning-roadmap-lesson-header">
+                    <span class="learning-roadmap-step" aria-hidden="true">{{ lesson.order }}</span>
+                    <div class="learning-roadmap-lesson-copy">
+                        <p class="learning-roadmap-lesson-meta">LESSON {{ lesson.order }}{% if lesson.estimated_duration %}<span aria-hidden="true">·</span>{{ lesson.estimated_duration }} minutes{% endif %}</p>
+                        <h3><a href="{% url 'learning:lesson-detail' lesson.pk %}">{{ lesson.title }}</a></h3>
+                        <p class="learning-roadmap-progress">{{ lesson.learner_progress_label }} <span aria-hidden="true">·</span> PDFs accessed {{ lesson.accessed_material_count }} / {{ lesson.file_material_count }} <span aria-hidden="true">·</span> Assignments submitted {{ lesson.submitted_assignment_count }} / {{ lesson.active_assignments|length }}</p>
+                    </div>
+                    <a class="learning-roadmap-open" href="{% url 'learning:lesson-detail' lesson.pk %}">Open Lesson <span aria-hidden="true">→</span></a>
+                </div>
+
+                {% if is_teacher %}
+                    <div class="learning-roadmap-actions">
+                        <a href="{% url 'learning:lesson-edit' lesson.pk %}">Add / Edit Lesson Notes</a>
+                        <a href="{% url 'learning:material-add' lesson.pk %}"><span aria-hidden="true">＋</span> Upload PDF / Add Material</a>
+                        <a href="{% url 'learning:assignment-add' lesson.pk %}"><span aria-hidden="true">＋</span> Create Assignment</a>
+                        <a class="learning-roadmap-delete" href="{% url 'learning:lesson-delete' lesson.pk %}">Delete Lesson</a>
+                    </div>
+                {% endif %}
+
+                {% if lesson.description %}
+                    <div class="learning-roadmap-subsection">
+                        <h4>Lesson notes</h4>
+                        <p>{{ lesson.description|truncatewords:35|linebreaksbr }}</p>
+                    </div>
+                {% endif %}
+
+                {% if lesson.accessible_materials %}
+                    <div class="learning-roadmap-subsection">
+                        <h4>Chapter materials</h4>
+                        {% for material in lesson.accessible_materials %}
+                            <div class="learning-plan-resource-row">
+                                <div>
+                                    <strong>{{ material.title }}</strong>
+                                    {% if material.description %}<p>{{ material.description|truncatewords:20 }}</p>{% endif %}
+                                </div>
+                                {% if material.material_type == 'LINK' %}
+                                    <a href="{{ material.external_url }}" target="_blank" rel="noopener noreferrer">Open resource <span aria-hidden="true">↗</span></a>
+                                {% else %}
+                                    <div class="learning-plan-resource-actions">
+                                        {% if material.pk in lesson.accessed_material_ids %}<span class="learning-plan-accessed">Accessed</span>{% endif %}
+                                        <a href="{% url 'learning:material-file' material.pk %}" target="_blank" rel="noopener">Open file</a>
+                                        <a href="{% url 'learning:material-file' material.pk %}?download=1">Download</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if lesson.visible_assignments %}
+                    <div class="learning-roadmap-subsection">
+                        <h4>Assignments</h4>
+                        {% for assignment in lesson.visible_assignments %}
+                            <div class="learning-plan-resource-row">
+                                <div>
+                                    <a class="learning-plan-assignment-title" href="{% url 'learning:assignment-detail' assignment.pk %}">{{ assignment.title }}</a>
+                                    <p>
+                                        {{ assignment.get_status_display }}
+                                        {% if assignment.due_date %}<span aria-hidden="true">·</span> Due {{ assignment.due_date|date:'M j, Y' }}{% endif %}
+                                        {% if not is_teacher and assignment.learner_submission %}
+                                            <span aria-hidden="true">·</span> {{ assignment.learner_submission.get_status_display }}
+                                        {% elif not is_teacher %}
+                                            <span aria-hidden="true">·</span> Not submitted
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                {% if assignment.resource_file %}
+                                    <div class="learning-plan-resource-actions">
+                                        <a href="{% url 'learning:assignment-resource-file' assignment.pk %}" target="_blank" rel="noopener">Open assignment file</a>
+                                        <a href="{% url 'learning:assignment-resource-file' assignment.pk %}?download=1">Download</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </article>
+        {% empty %}
+            <div class="learning-plan-empty-state">
+                <span aria-hidden="true">✦</span>
+                {% if is_teacher %}
+                    <h3>Start building this learning journey</h3>
+                    <p>Create a lesson first. From each lesson you can add notes, upload PDFs and other materials, and create assignments.</p>
+                    <a class="learning-plan-action-primary" href="{% url 'learning:lesson-add' plan.pk %}"><span aria-hidden="true">＋</span> Add First Lesson</a>
+                {% else %}
+                    <h3>No lessons yet</h3>
+                    <p>Your teacher hasn't added lessons to this learning plan yet.</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </section>
+
+    <section class="learning-plan-sessions" aria-labelledby="plan-sessions-heading">
+        <header class="learning-plan-section-heading">
+            <div class="learning-plan-section-heading-main">
+                <span class="learning-plan-section-icon learning-plan-session-icon" aria-hidden="true">◷</span>
+                <div><p>LEARN TOGETHER</p><h2 id="plan-sessions-heading">Learning sessions</h2></div>
+            </div>
+            {% if is_teacher %}<a class="learning-plan-section-action" href="{% url 'learning:session-add' plan.learning_direction_id %}"><span aria-hidden="true">＋</span> Schedule Session</a>{% endif %}
+        </header>
+        {% for session in plan.learning_direction.sessions.all %}
+            <article class="learning-plan-session-card">
+                <span class="learning-plan-session-date"><span>{{ session.scheduled_start|date:'M' }}</span><strong>{{ session.scheduled_start|date:'j' }}</strong></span>
+                <div class="learning-plan-session-copy">
+                    <a href="{% url 'learning:session-detail' session.pk %}">{{ session.title }}</a>
+                    <p>{% if session.lesson %}{{ session.lesson.title }} <span aria-hidden="true">·</span> {% endif %}{{ session.scheduled_start|date:'M j, Y g:i A' }} – {{ session.scheduled_end|date:'g:i A' }}</p>
+                </div>
+                <span class="learning-plan-session-status">{{ session.get_status_display }}</span>
+            </article>
+        {% empty %}
+            <div class="learning-plan-sessions-empty">
+                <span>No sessions scheduled yet.</span>
+                {% if is_teacher %}<a href="{% url 'learning:session-add' plan.learning_direction_id %}">Schedule the first session <span aria-hidden="true">→</span></a>{% endif %}
+            </div>
+        {% endfor %}
+    </section>
+    <a class="learning-plan-back-learning" href="{% url 'learning:directions' %}"><span aria-hidden="true">←</span> Back to My Learning</a>
+</main>
+{% endblock %}
